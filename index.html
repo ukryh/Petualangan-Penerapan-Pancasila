@@ -141,6 +141,22 @@ textarea{min-height:140px;resize:vertical}
 .intro .card{background:var(--cream);color:var(--ink);border-radius:22px;padding:16px;max-width:420px;box-shadow:0 6px 0 #0004}
 .intro h3{color:var(--deep2)}
 
+/* toko kecil */
+.tkhead{display:flex;gap:12px;align-items:center;margin-bottom:12px}.tkhead canvas{width:96px;height:112px;flex:none;background:#cfeeff;border-radius:16px}
+.tklist{display:grid;gap:8px}.tkrow{display:flex;gap:10px;align-items:center;background:#fff;border:3px solid #d6e0ff;border-radius:16px;padding:8px 10px}
+.tkrow .ik{font-size:1.9rem;width:44px;text-align:center;flex:none}.tkrow .mid{flex:1;min-width:0}
+.tkrow .mid b{display:block;font-family:var(--f-display)}.tkrow .mid small{display:block;color:var(--muted);font-weight:700;line-height:1.25}
+.tkrow .btn{flex:none;min-width:92px}.tkrow .btn.lock{opacity:.55;filter:grayscale(.6)}
+/* tangkap nilai */
+.tgwrap{position:relative;width:fit-content;max-width:100%;margin:0 auto}
+.tgov{position:absolute;inset:0;display:grid;place-items:center;background:#0b1650d9;border-radius:16px;padding:12px;text-align:center}
+.tgov .card{background:var(--cream);color:var(--ink);border-radius:20px;padding:14px;width:100%;max-width:310px;max-height:100%;overflow:auto;box-shadow:0 5px 0 #0004;display:flex;flex-direction:column;gap:6px}
+.tgov .ibody{text-align:left;font-size:.95rem}.tgov .ibody p{margin:5px 0}
+.tgov .card .btn{width:100%}
+.tgpad{display:flex;gap:10px;align-items:center;justify-content:center;margin:12px auto 0;touch-action:none;user-select:none;-webkit-user-select:none}
+.tgpad .pad{width:64px;height:64px;font-size:1.6rem;flex:none}
+.tgzone{flex:1;min-width:0;height:64px;border-radius:32px;background:#e5ebff;color:#16225e;border:3px dashed #8fa2e6;display:grid;place-items:center;font:700 .85rem var(--f-display);touch-action:none;text-align:center;padding:0 8px}
+
 /* soal */
 .bsr{background:#fff;border:3px solid #d6e0ff;border-radius:14px;padding:10px 12px}.bsr p{margin:0 0 8px;font-weight:700}.bsr .sw{gap:8px}
 .btn-ur{text-align:left;background:#fff;border:3px solid #d6e0ff;border-radius:14px;padding:11px 12px;font:700 1rem var(--f-body);color:var(--ink);min-height:48px}
@@ -148,6 +164,18 @@ textarea{min-height:140px;resize:vertical}
 .rubrik label.ok,.btn-ur.ok,.bsr.ok{border-color:var(--grass);background:#eaffe3}.rubrik label.no,.btn-ur.no,.bsr.no{border-color:var(--merah);background:#ffe8e8}
 .dis{pointer-events:none}
 .intro{overflow:auto}.intro .card{max-height:100%;overflow:auto;font-size:.92rem}
+.intro .ibody{overflow:auto;-webkit-overflow-scrolling:touch;text-align:left}
+.intro .ibody p{margin:6px 0}
+/* HP / layar sempit: kartu pembuka jadi jendela layar penuh, tombol Mulai selalu tampak tanpa scroll */
+@media(max-width:700px),(max-height:520px){
+ .intro{position:fixed;inset:0;z-index:60;overflow:hidden;background:#0b1650eb;
+  padding:max(14px,env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+ .intro .card{display:flex;flex-direction:column;width:100%;max-width:420px;max-height:100%;overflow:hidden;font-size:1rem}
+ .intro .card h3{text-align:center;flex:none}
+ .intro .ibody{flex:0 1 auto;min-height:0}
+ .intro .card .btn{flex:none;width:100%;margin-top:10px}
+ .intro .card .btn.kecil{margin-top:8px}
+}
 .q-ctx{display:inline-flex;gap:6px;align-items:center;font-family:var(--f-display);font-weight:600;font-size:.85rem;color:#fff;background:var(--deep2);padding:3px 12px;border-radius:999px}
 .situasi{background:#fff;border:3px dashed #b8c7f5;border-radius:16px;padding:12px 14px;margin:10px 0}
 .tanya{font-weight:800;font-size:1.08rem}
@@ -270,9 +298,20 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
     <button class="btn merah kecil" id="btnCocok">Mini-game Cocokkan Nilai</button>
     <button class="btn hijau kecil" id="btnRank">Papan Peringkat</button>
     <button class="btn biru kecil" id="btnRekap">Rekap &amp; Jawaban</button>
+    <button class="btn kecil" id="btnToko" type="button">🛒 Toko Kecil</button>
     <button class="btn kecil" id="btnRefAkhir" hidden>Refleksi Akhir</button>
     <button class="btn ghost kecil" id="btnGuruMap" hidden>Panel Guru</button>
     <button class="btn ghost kecil" data-go="home">Beranda</button>
+  </div>
+</section>
+
+<!-- TOKO KECIL -->
+<section class="screen" id="toko" hidden>
+  <div class="top"><button class="btn ghost kecil" data-go="map">‹ Peta</button><h2>Toko Kecil</h2><span class="chip">Koin <b id="tkSaldo">0</b></span></div>
+  <div class="panel">
+    <div class="tkhead"><canvas id="tkCv" width="120" height="140"></canvas>
+      <p class="kw" style="margin:0">Tukar koin dari misi lari dengan hiasan karakter dan bantuan. Koin biasa bernilai 1, diamond 5, menginjak robot Si Hoaks 3. Mengulang misi hanya menghitung koin terbanyak. Dalam mode tim, yang dihitung adalah koin dari misi yang kamu kerjakan sendiri.</p></div>
+    <div class="tklist" id="tkList"></div>
   </div>
 </section>
 
@@ -281,8 +320,8 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
   <div class="top"><button class="btn ghost kecil" id="btnPlayBack">‹ Peta</button><h2 id="playTitle"></h2><span class="chip" id="playWho"></span></div>
   <div class="gamebox">
     <canvas id="cv" width="640" height="360"></canvas>
-    <div class="hud"><span class="chip">Koin <b id="pCoin">0</b></span><span class="chip" id="pPos">Jarak <b>0%</b></span><button class="pause" id="btnPause">Jeda</button></div>
-    <div class="intro" id="playIntro"><div class="card"><h3 id="introT"></h3><p id="introP"></p><button class="btn hijau" id="btnMulai" style="margin-top:8px">Mulai Lari</button></div></div>
+    <div class="hud"><span class="chip">Koin <b id="pCoin">0</b></span><span class="chip" id="pPos">Jarak <b>0%</b></span><span class="chip" id="pShield" hidden>🛡️ Perisai aktif</span><button class="pause" id="btnPause">Jeda</button></div>
+    <div class="intro" id="playIntro"><div class="card"><h3 id="introT"></h3><div class="ibody"><p id="introP"></p></div><button class="btn kecil" id="btnShield" type="button" hidden style="margin-top:8px;--t:#16225e;background:#cfeeff;box-shadow:0 3px 0 #9fcbe8"></button><button class="btn hijau" id="btnMulai" style="margin-top:8px">Mulai Lari</button><button class="btn kecil" id="btnIntroBack" type="button" style="--t:#16225e;background:#e5ebff;box-shadow:0 3px 0 #b9c6f0">‹ Kembali ke Peta</button></div></div>
   </div>
   <div class="pads">
     <button class="pad" id="padL" aria-label="Kiri">◀</button>
@@ -342,10 +381,15 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
 <!-- TANGKAP NILAI -->
 <section class="screen" id="tangkap" hidden>
   <div class="top"><button class="btn ghost kecil" data-go="map">‹ Peta</button><h2>Tangkap Nilai</h2><span class="chip">Poin <b id="tgPoin">0</b> · Nyawa <b id="tgNyawa">3</b></span></div>
-  <div class="panel">
-    <p class="kw" style="margin-top:0">Geser keranjang dengan jarimu. Tangkap kartu yang berisi sikap sesuai Pancasila, dan hindari yang bertentangan. Menangkap sikap yang salah mengurangi nyawa.</p>
-    <canvas id="tgCv" width="360" height="480" style="width:100%;max-width:420px;touch-action:none;border-radius:16px;display:block;margin:0 auto"></canvas>
-    <div id="tgEnd" hidden><div class="big" id="tgSkor">0</div><p id="tgDet" style="font-weight:800"></p><div class="row"><button class="btn hijau" id="btnTgAgain">Main Lagi</button><button class="btn ghost kecil" data-go="map" style="--t:#16225e;background:#e5ebff">Ke Peta</button></div></div>
+  <div class="panel" id="tgPanel">
+    <div class="tgwrap" id="tgWrap">
+      <canvas id="tgCv" width="360" height="480" style="display:block;touch-action:none;border-radius:16px"></canvas>
+      <div class="tgov" id="tgStartBox"><div class="card"><h3>🧺 Tangkap Nilai</h3>
+        <div class="ibody"><p>Geser keranjang ke kiri dan kanan.</p><p>✅ Tangkap kartu sikap yang <b>sesuai</b> Pancasila (+10 poin).</p><p>❌ Hindari sikap yang <b>bertentangan</b> (nyawa berkurang).</p><p>Kartu jatuh pelan dulu, lalu makin cepat. Baca dulu, tekan Mulai kalau sudah siap.</p></div>
+        <button class="btn kecil" id="btnTgNyawa" type="button" hidden style="--t:#16225e;background:#ffe0e3;box-shadow:0 3px 0 #f0b5bb"></button><button class="btn hijau" id="btnTgMulai" type="button">Mulai</button></div></div>
+      <div class="tgov" id="tgEnd" hidden><div class="card"><div class="big" id="tgSkor">0</div><p id="tgDet" style="font-weight:800;margin:4px 0"></p><div class="row" style="justify-content:center"><button class="btn hijau" id="btnTgAgain" type="button">Main Lagi</button><button class="btn ghost kecil" data-go="map" type="button" style="--t:#16225e;background:#e5ebff">Ke Peta</button></div></div></div>
+    </div>
+    <div class="tgpad" id="tgPad"><button class="pad" id="tgL" type="button" aria-label="Kiri">◀</button><div class="tgzone" id="tgZone">◀ geser jarimu di sini ▶</div><button class="pad" id="tgR" type="button" aria-label="Kanan">▶</button></div>
   </div>
 </section>
 
@@ -358,7 +402,7 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
     <div class="ckgrid" id="ckBtns"></div>
     <div id="ckFb" hidden>
       <p id="ckFbT" style="font-weight:800;margin-top:0"></p>
-      <div id="ckReason" hidden><label class="f" for="ckWhy">Tulis satu kalimat alasanmu (bonus +5 poin, minimal 6 kata)</label><input type="text" id="ckWhy" maxlength="160" autocomplete="off"></div>
+      <div id="ckReason" hidden><label class="f" for="ckWhy">Tulis alasanmu (bonus +5 poin)</label><input type="text" id="ckWhy" maxlength="160" autocomplete="off"></div>
       <div class="row" style="margin-top:10px"><button class="btn hijau" id="btnCkNext">Lanjut</button></div>
     </div>
   </div>
@@ -383,7 +427,7 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
 <section class="screen" id="refleksi" hidden>
   <div class="top"><button class="btn ghost kecil" data-go="map">‹ Peta</button><h2 id="rfTitle">Refleksi</h2><span></span></div>
   <div class="panel">
-    <p class="kw" style="margin-top:0">Tulis dengan jujur dan kalimatmu sendiri (minimal 8 kata per pertanyaan).</p>
+    <p class="kw" style="margin-top:0">Tulis dengan jujur dan kalimatmu sendiri.</p>
     <div id="rfForm"></div>
     <div class="rfq"><label class="f">Seberapa yakin kamu bisa menerapkannya?</label><div class="sw" id="rfConf"></div></div>
     <p id="rfErr" class="kw" style="color:var(--merah-d)" hidden></p>
@@ -412,6 +456,16 @@ const PAL={
 };
 const GAYA=[['pendek','Pendek'],['kuncir','Kuncir'],['keriting','Keriting'],['jabrik','Jabrik'],['panjang','Panjang'],['hijab','Hijab']];
 const AKSES=[['tidak','Polos'],['kacamata','Kacamata'],['topi','Topi'],['peci','Peci'],['ikat','Ikat Kepala'],['tas','Ransel']];
+/* TOKO KECIL: harga dalam koin. Silakan ubah angka 'harga' sesuai kebutuhan kelas. */
+const SHOP=[
+ {id:'garuda',jenis:'aks',ikon:'🦅',nama:'Pin Garuda',ket:'Lencana Garuda emas di bajumu.',harga:40},
+ {id:'blangkon',jenis:'aks',ikon:'🧢',nama:'Blangkon',ket:'Penutup kepala batik khas Jawa.',harga:60},
+ {id:'selempang',jenis:'aks',ikon:'🎗️',nama:'Selempang Merah Putih',ket:'Selempang warna bendera kita.',harga:80},
+ {id:'bintang',jenis:'aks',ikon:'⭐',nama:'Bintang Emas',ket:'Bintang melayang di atas kepalamu.',harga:100},
+ {id:'perisai',jenis:'pakai',ikon:'🛡️',nama:'Perisai Lari',ket:'Menahan satu tabrakan di satu misi lari, koinmu aman. Pilih sebelum Mulai Lari.',harga:30},
+ {id:'nyawa',jenis:'pakai',ikon:'❤️',nama:'Nyawa Ekstra',ket:'Nyawa keempat di satu permainan Tangkap Nilai. Pilih sebelum Mulai.',harga:25}
+];
+function aksesAll(own){own=own||{};return AKSES.concat(SHOP.filter(i=>i.jenis==='aks'&&own[i.id]).map(i=>[i.id,i.nama]))}
 
 function shade(hex,a){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;
  const f=v=>Math.max(0,Math.min(255,Math.round(a<0?v*(1+a):v+(255-v)*a)));
@@ -508,6 +562,10 @@ function drawAvatar(c,x,y,s,o,p){
    rr(c,-16.8,-56,33.6,5.2,2.4);c.lineWidth=1.4;c.strokeStyle=OL;c.stroke();
    c.beginPath();c.moveTo(-16,-54);c.lineTo(-23,-58+Math.sin(t*.3)*1.5);c.lineTo(-22,-50);c.closePath();fillS(c,'#e8383d',1.2)}
  if(o.acc==='tas'){c.lineWidth=2.4;c.strokeStyle='#c52a30';c.beginPath();c.moveTo(-9,-31);c.lineTo(3,-13);c.stroke()}
+ if(o.acc==='garuda'){c.beginPath();c.arc(-6,-24,4,0,7);fillS(c,lg(c,-9,-28,-3,-20,'#ffe27a','#d99a00'),1.2);c.beginPath();c.moveTo(-6,-27);c.lineTo(-3.4,-23);c.lineTo(-6,-21.4);c.lineTo(-8.6,-23);c.closePath();c.fillStyle='#e8383d';c.fill()}
+ if(o.acc==='blangkon'){c.beginPath();c.ellipse(0,-50,17.5,12,0,Math.PI,0);c.closePath();fillS(c,lg(c,0,-62,0,-48,'#9b6236','#5e3519'));c.beginPath();c.ellipse(-15,-52,4.5,5.5,0,0,7);fillS(c,'#5e3519',1.3);rr(c,-17.5,-53,35,4,2);fillS(c,'#2b1a0a',1.2)}
+ if(o.acc==='selempang'){c.beginPath();c.moveTo(-11,-31);c.lineTo(-4,-31);c.lineTo(11.5,-14.5);c.lineTo(11.5,-22.5);c.closePath();fillS(c,'#e8383d',1.3);c.beginPath();c.moveTo(-7.5,-31);c.lineTo(11.5,-18.5);c.lineWidth=1.8;c.strokeStyle='#fff';c.stroke()}
+ if(o.acc==='bintang'){const by=-75+Math.sin(t*.1)*2;c.beginPath();for(let k=0;k<10;k++){const ang=-Math.PI/2+k*Math.PI/5,rad=k%2?3.2:7.2;c.lineTo(Math.cos(ang)*rad,by+Math.sin(ang)*rad)}c.closePath();fillS(c,lg(c,0,by-7,0,by+7,'#fff2a0','#ffc72c'),1.3)}
  // kilap kepala
  c.beginPath();c.ellipse(-6,hy-9,4,2,-.5,0,7);c.fillStyle='rgba(255,255,255,.22)';c.fill();
  c.restore();
@@ -839,7 +897,7 @@ const Game=(()=>{
   c=cv.getContext('2d');c.setTransform(1280/W,0,0,1280/W,0,0);
   imgs=images||imgs;img=wd%2===0?imgs.a:imgs.b;imgR=img?img.width/img.height:1;
   const lv=gen(idx,wd);
-  S={idx,wd,ava,cb,lv,cam:0,t:0,coins:0,
+  S={idx,wd,ava,cb,lv,cam:0,t:0,coins:0,shield:0,
    p:{x:80,y:GY,vx:0,vy:0,on:true,dir:1,coy:0,jb:0,inv:0,safe:{x:80,y:GY}},
    parts:[],state:'ready',win:0,col:DUNIA[wd].c,sym:DUNIA[wd].sym,msg:0};
   keys={l:0,r:0,j:0};jHeld=false;paused=false;
@@ -847,6 +905,7 @@ const Game=(()=>{
   loop0();
  }
  function go(){if(S&&S.state==='ready')S.state='run'}
+ function setShield(v){if(S)S.shield=v?1:0}
  function loop0(){cancelAnimationFrame(raf);run=true;last=performance.now();acc=0;raf=requestAnimationFrame(frame)}
  function stop(){run=false;cancelAnimationFrame(raf);S=null}
  function setPause(v){paused=v===undefined?!paused:v;return paused}
@@ -894,9 +953,9 @@ const Game=(()=>{
    if(e.fly)e.y=e.y0+Math.sin(s.t*.05+e.ph)*20;e.x+=e.vx;if(e.x<e.a){e.x=e.a;e.vx*=-1}if(e.x>e.b){e.x=e.b;e.vx*=-1}
    if(Math.abs(e.x-p.x)<20&&p.y>e.y-34&&p.y-38<e.y){
     if(!e.rock&&p.vy>1&&p.y<e.y-12){e.dead=1;p.vy=-8;s.coins+=3;burst(e.x,e.y-14,'#ffd23a',10,3);Sfx.stomp();s.cb.onCoins&&s.cb.onCoins(s.coins)}
-    else if(!p.inv){p.inv=90;p.vx=(p.x<e.x?-1:1)*6;p.vy=-6;p.on=false;const lose=Math.min(3,s.coins);s.coins-=lose;Sfx.hurt();burst(p.x,p.y-20,'#ff6b6b',8,3);s.cb.onCoins&&s.cb.onCoins(s.coins)}
+    else if(!p.inv){p.inv=90;p.vx=(p.x<e.x?-1:1)*6;p.vy=-6;p.on=false;if(s.shield){s.shield=0;Sfx.coin();burst(p.x,p.y-20,'#6fd8ff',16,3.5);s.cb.onShield&&s.cb.onShield()}else{const lose=Math.min(3,s.coins);s.coins-=lose;Sfx.hurt();burst(p.x,p.y-20,'#ff6b6b',8,3)}s.cb.onCoins&&s.cb.onCoins(s.coins)}
    }});
-  lv.sp.forEach(k=>{if(!p.inv&&Math.abs(k.x+k.w/2-p.x)<k.w/2+6&&p.y>GY-16&&p.y<GY+6){p.inv=90;p.vx=-5*(p.dir||1);p.vy=-8;p.on=false;const lose=Math.min(3,s.coins);s.coins-=lose;Sfx.hurt();burst(p.x,p.y-20,'#ff6b6b',8,3);s.cb.onCoins&&s.cb.onCoins(s.coins)}});
+  lv.sp.forEach(k=>{if(!p.inv&&Math.abs(k.x+k.w/2-p.x)<k.w/2+6&&p.y>GY-16&&p.y<GY+6){p.inv=90;p.vx=-5*(p.dir||1);p.vy=-8;p.on=false;if(s.shield){s.shield=0;Sfx.coin();burst(p.x,p.y-20,'#6fd8ff',16,3.5);s.cb.onShield&&s.cb.onShield()}else{const lose=Math.min(3,s.coins);s.coins-=lose;Sfx.hurt();burst(p.x,p.y-20,'#ff6b6b',8,3)}s.cb.onCoins&&s.cb.onCoins(s.coins)}});
   // kamera
   s.cam=Math.max(0,Math.min(lv.L-W,p.x-170));
   s.cb.onProgress&&s.cb.onProgress(Math.min(100,Math.round(p.x/lv.flag*100)));
@@ -999,6 +1058,7 @@ const Game=(()=>{
   if(!(p.inv>0&&Math.floor(s.t/4)%2&&s.state==='run')){
    drawAvatar(c,p.x-cam,p.y,1.12,s.ava,{t:s.t,air:!p.on,dir:p.dir,moving:Math.abs(p.vx)>.4,blink:(s.t%190)<6});
   }
+  if(s.shield){c.save();c.globalAlpha=.3+.1*Math.sin(s.t*.15);c.beginPath();c.arc(p.x-cam,p.y-26,32,0,7);c.fillStyle='#6fd8ff';c.fill();c.globalAlpha=.9;c.lineWidth=2.5;c.strokeStyle='#fff';c.stroke();c.restore()}
   s.parts.forEach(q=>{c.globalAlpha=Math.min(1,q.l/20);c.fillStyle=q.col;c.beginPath();c.arc(q.x-cam,q.y,3,0,7);c.fill()});c.globalAlpha=1;
   c.restore();
   if(lv.f.dk){const g=c.createRadialGradient(p.x-cam,p.y+CAMY-30,36,p.x-cam,p.y+CAMY-30,150);g.addColorStop(0,'rgba(8,10,40,0)');g.addColorStop(1,'rgba(8,10,40,.94)');c.fillStyle=g;c.fillRect(0,0,W,H)}
@@ -1017,7 +1077,7 @@ const Game=(()=>{
   const on=e=>{e.preventDefault();keys[k]=1;b.classList.add('on');Sfx.init()},off=e=>{e.preventDefault();keys[k]=0;b.classList.remove('on')};
   b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(n=>b.addEventListener(n,off));
   b.addEventListener('contextmenu',e=>e.preventDefault())}
- return {start,go,stop,setPause,hold,keys};
+ return {start,go,stop,setPause,hold,keys,setShield};
 })();
 /* ===== 15 TANTANGAN BERBEDA (satu per misi) ===== */
 const CH=[
@@ -1059,6 +1119,7 @@ function show(id){
   if(id==='map')renderMap();
   if(id==='designer')animDes();
   if(id==='rank')renderRank();
+  if(id==='toko')renderToko();
   if(id==='guru')renderGuru();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.go)));
@@ -1111,7 +1172,7 @@ function buildOpts(){
   sec('Warna kulit','s',PAL.kulit,'skin',true);
   sec('Warna baju','s',PAL.baju,'baju',true);
   sec('Warna bawahan','s',PAL.bawah,'bawah',true);
-  sec('Aksesori','t',AKSES,'acc',false);
+  sec('Aksesori','t',aksesAll(save&&save.shop&&save.shop.own),'acc',false);
 }
 function refreshOpts(){
   $('opts').querySelectorAll('button').forEach(b=>{const k=b.dataset.k,v=b.dataset.v;
@@ -1150,7 +1211,7 @@ function who(idx){
 function renderMap(){
   if(!save)save=load();if(!save){show('home');return}
   $('mapTitle').textContent=save.mode==='solo'?('Petualangan '+save.members[0].nama):('Tim '+save.team);
-  const t=totals();$('hudStar').textContent=t.s+'/'+starsMax();$('hudCoin').textContent=t.k;
+  const t=totals();$('hudStar').textContent=t.s+'/'+starsMax();$('hudCoin').textContent=dompet();
   $('btnMute').textContent=Sfx.on?'♪':'×';
   const root=$('worlds');root.innerHTML='';
   let nextFound=false;
@@ -1188,17 +1249,24 @@ function startMission(idx){
   $('introT').textContent=d.sym+' '+q.judul;
   $('introP').style.whiteSpace='pre-line';
   $('introP').textContent='Tingkat '+k+'/3: '+TL[k-1]+'\nTujuan misi: '+KG[k-1]+' penerapan '+d.sila+' ('+q.ctx.toLowerCase()+').\n'+(save.mode==='tim'?'Giliran '+curWho.nama+' mengendalikan karakter. ':'')+''+(CH[idx]?CH[idx].n+': '+CH[idx].t:'')+' Capai bendera di ujung jalan untuk membuka soal misi.';
-  $('playIntro').hidden=false;$('btnPause').textContent='Jeda';
+  $('playIntro').hidden=false;$('btnPause').textContent='Jeda';shieldOn=false;shieldUI();$('pShield').hidden=true;
   show('play');
   Game.start(idx,wi,curWho.ava,{
     onCoins:n=>$('pCoin').textContent=n,
     onProgress:n=>$('pPos').innerHTML='Jarak <b>'+n+'%</b>',
-    onWin:(coins,total)=>{showQuestion(idx,coins)}
+    onWin:(coins,total)=>{showQuestion(idx,coins)},
+    onShield:()=>{$('pShield').hidden=true;toast('Perisai menyelamatkanmu! Koinmu aman.',1800)}
   },images);
 }
-$('btnMulai').onclick=()=>{Sfx.init();$('playIntro').hidden=true;Game.go()};
+let shieldOn=false;
+function shieldUI(){const n=SH().qty.perisai||0,b=$('btnShield');b.hidden=n<1;b.textContent=(shieldOn?'✅ ':'')+'🛡️ Pakai Perisai (punya '+n+')'}
+$('btnShield').onclick=()=>{shieldOn=!shieldOn;shieldUI()};
+$('btnMulai').onclick=()=>{Sfx.init();
+  if(shieldOn&&(SH().qty.perisai||0)>0){SH().qty.perisai--;persist();Game.setShield(1);$('pShield').hidden=false;shieldOn=false}
+  $('playIntro').hidden=true;Game.go()};
 $('btnPause').onclick=()=>{const p=Game.setPause();$('btnPause').textContent=p?'Lanjut':'Jeda'};
 $('btnPlayBack').onclick=()=>show('map');
+$('btnIntroBack').onclick=()=>show('map');
 Game.hold('padL','l');Game.hold('padR','r');Game.hold('padJ','j');
 
 /* soal: pilihan ganda, pilihan ganda kompleks, benar-salah, urutan */
@@ -1328,7 +1396,7 @@ $('btnReset').onclick=()=>{
 /* ===== TAMBAHAN: data bersama, Cocokkan Nilai, peringkat, refleksi, panel guru ===== */
 const SKORLBL=['Perlu bimbingan','Berkembang','Cakap','Mahir'];
 const KONF=['Belum yakin','Mulai yakin','Yakin','Sangat yakin'];
-function norm(s){s.cocok=s.cocok||{best:0,acc:0,plays:0};s.ref=s.ref||{};s.guru=s.guru||{};s.tg=s.tg||{best:0,plays:0};return s}
+function norm(s){s.shop=s.shop||{spent:0,own:{},qty:{}};s.shop.own=s.shop.own||{};s.shop.qty=s.shop.qty||{};s.cocok=s.cocok||{best:0,acc:0,plays:0};s.ref=s.ref||{};s.guru=s.guru||{};s.tg=s.tg||{best:0,plays:0};return s}
 function visible(id){return !$(id).hidden}
 function mk(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 async function upsert(ref,data){const g=await ref.get();if(g.exists)await ref.update(data);else await ref.set(data)}
@@ -1428,7 +1496,7 @@ function ckPick(n,btn){
   $('ckFb').hidden=false;$('ckFb').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 $('btnCkNext').onclick=()=>{
-  if(!$('ckReason').hidden&&wc($('ckWhy').value)>=6){ck.bonus++;toast('Bonus alasan +5 poin',1600)}
+  if(!$('ckReason').hidden&&wc($('ckWhy').value)>=1){ck.bonus++;toast('Bonus alasan +5 poin',1600)}
   ck.i++;
   if(ck.i>=ck.list.length)ckFinish();else ckRender();
 };
@@ -1530,32 +1598,83 @@ function mediaRender(idx){
 }
 const TG_G=['Menolong teman yang jatuh','Berdoa sesuai agamanya','Bermusyawarah dengan kelas','Gotong royong bersihkan kelas','Menghormati teman beda agama','Bangga memakai produk lokal','Berbagi dengan yang membutuhkan','Cek berita sebelum membagikan','Menerima hasil pemilihan ketua','Adil kepada semua teman'];
 const TG_B=['Mengejek teman karena fisik','Menyebarkan hoaks','Memaksakan kehendak sendiri','Mengolok agama lain','Membeda-bedakan teman dari suku','Curang saat pemilihan','Mengambil hak teman','Merekam lalu menertawakan teman','Mengucilkan teman baru','Membuang sampah sembarangan'];
-let tg=null,tgRaf=0;
+let tg=null,tgRaf=0,tgDir=0,tgNyawaOn=false;
+function tgNyawaUI(){const n=SH().qty.nyawa||0,b=$('btnTgNyawa');b.hidden=n<1;b.textContent=(tgNyawaOn?'✅ ':'')+'❤️ Pakai Nyawa Ekstra (punya '+n+')'}
+$('btnTgNyawa').onclick=()=>{tgNyawaOn=!tgNyawaOn;tgNyawaUI()};
+const TG_MIN=36,TG_MAX=324,TG_V0=1.0,TG_DV=.07;
+/* kecepatan memakai waktu nyata (bukan per frame) agar sama di layar 60Hz dan 120Hz (iPhone Pro) */
+function tgFit(){
+  const cv=$('tgCv');if(!cv||$('tangkap').hidden)return;
+  const pw=$('tgPanel').clientWidth-36,vh=window.innerHeight||document.documentElement.clientHeight;
+  const top=cv.getBoundingClientRect().top+(window.pageYOffset||0);
+  const s=Math.max(.45,Math.min(pw/360,(vh-top-64-12-40)/480,1.15));
+  cv.style.width=Math.round(360*s)+'px';cv.style.height=Math.round(480*s)+'px';
+  $('tgPad').style.width=Math.round(360*s)+'px';
+}
 function tgStart(){
   const cv=$('tgCv');
-  tg={c:cv.getContext('2d'),items:shuffle(TG_G.map(t=>({t,g:1})).concat(TG_B.map(t=>({t,g:0})))),i:0,it:[],bx:180,poin:0,nyawa:3,time:0,fb:null,fbT:0,end:false,ok:0};
-  $('tgEnd').hidden=true;$('tgPoin').textContent=0;$('tgNyawa').textContent=3;show('tangkap');
-  const mv=e=>{const r=cv.getBoundingClientRect();tg.bx=Math.max(50,Math.min(310,(e.clientX-r.left)/r.width*360))};
-  cv.onpointermove=mv;cv.onpointerdown=mv;cancelAnimationFrame(tgRaf);tgRaf=requestAnimationFrame(tgLoop);
+  tg={c:cv.getContext('2d'),items:shuffle(TG_G.map(t=>({t,g:1})).concat(TG_B.map(t=>({t,g:0})))),i:0,it:[],bx:180,tx:180,poin:0,nyawa:3,time:0,next:20,run:false,cdMs:0,last:0,fb:null,fbT:0,end:false,ok:0};
+  tgDir=0;cancelAnimationFrame(tgRaf);
+  $('tgEnd').hidden=true;$('tgStartBox').hidden=false;$('tgPoin').textContent=0;$('tgNyawa').textContent=3;tgNyawaOn=false;tgNyawaUI();
+  show('tangkap');tgFit();tgDraw();
 }
-function tgLoop(){
+$('btnTgMulai').onclick=()=>{
+  Sfx.init();if(!tg||tg.run)return;
+  $('tgStartBox').hidden=true;tg.run=true;tg.cdMs=2700;tg.last=0;
+  if(tgNyawaOn&&(SH().qty.nyawa||0)>0){SH().qty.nyawa--;persist();tg.nyawa=4;$('tgNyawa').textContent=4;tgNyawaOn=false}
+  cancelAnimationFrame(tgRaf);tgRaf=requestAnimationFrame(tgLoop);
+};
+(function(){
+  const cv=$('tgCv'),zone=$('tgZone'),L=$('tgL'),R=$('tgR');
+  const clampX=x=>Math.max(TG_MIN,Math.min(TG_MAX,x));
+  const onCv=e=>{if(!tg)return;const r=cv.getBoundingClientRect();tg.tx=clampX((e.clientX-r.left)/r.width*360)};
+  const onZone=e=>{if(!tg)return;const r=zone.getBoundingClientRect(),f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));tg.tx=TG_MIN+f*(TG_MAX-TG_MIN)};
+  const bind=(el,fn)=>{
+    el.addEventListener('pointerdown',e=>{try{el.setPointerCapture(e.pointerId)}catch(_){}fn(e);e.preventDefault()});
+    el.addEventListener('pointermove',fn);
+  };
+  bind(cv,onCv);bind(zone,onZone);
+  const hold=(el,d)=>{
+    el.addEventListener('pointerdown',e=>{tgDir=d;try{el.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()});
+    ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>el.addEventListener(ev,()=>{if(tgDir===d)tgDir=0}));
+  };
+  hold(L,-1);hold(R,1);
+  document.addEventListener('keydown',e=>{if($('tangkap').hidden)return;if(e.key==='ArrowLeft'){tgDir=-1;e.preventDefault()}else if(e.key==='ArrowRight'){tgDir=1;e.preventDefault()}});
+  document.addEventListener('keyup',e=>{if(e.key==='ArrowLeft'&&tgDir===-1)tgDir=0;if(e.key==='ArrowRight'&&tgDir===1)tgDir=0});
+  window.addEventListener('resize',tgFit);
+  window.addEventListener('orientationchange',()=>setTimeout(tgFit,250));
+})();
+function tgLoop(now){
   if($('tangkap').hidden||!tg)return;
-  const g=tg;g.time++;
-  if(!g.end&&g.i<g.items.length&&g.time%Math.max(34,76-g.i*2)===0){const o=g.items[g.i++];g.it.push({t:o.t,g:o.g,x:20+Math.random()*190,y:-46,v:1.7+g.i*.06})}
-  g.it.forEach(o=>{o.y+=o.v;if(!o.d&&o.y>385&&o.y<432&&Math.abs(o.x+65-g.bx)<80){o.d=1;
-    if(o.g){g.poin+=10;g.ok++;Sfx.coin();g.fb=['Tepat! +10','#1f8a4c']}else{g.nyawa--;Sfx.hurt();g.fb=['Itu bukan sikap Pancasila!','#d63a45']}
-    g.fbT=55;$('tgPoin').textContent=g.poin;$('tgNyawa').textContent=Math.max(0,g.nyawa)}});
-  g.it=g.it.filter(o=>!o.d&&o.y<500);
+  const g=tg;if(!g.last)g.last=now;
+  let dt=(now-g.last)/16.667;g.last=now;if(!(dt>0))dt=1;dt=Math.min(dt,3);   /* 1 = satu frame pada 60Hz */
+  if(tgDir)g.tx=Math.max(TG_MIN,Math.min(TG_MAX,g.tx+tgDir*5*dt));
+  g.bx+=(g.tx-g.bx)*Math.min(1,.3*dt);
+  if(g.cdMs>0){g.cdMs-=dt*16.667}
+  else{
+    g.time+=dt;
+    /* mulai pelan, makin lama makin cepat dan makin rapat */
+    if(!g.end&&g.i<g.items.length&&g.time>=g.next){const o=g.items[g.i];g.i++;
+      g.it.push({t:o.t,g:o.g,x:4+Math.random()*202,y:-52,v:TG_V0+(g.i-1)*TG_DV});
+      g.next=g.time+Math.max(62,112-g.i*2.6)}
+    g.it.forEach(o=>{o.y+=o.v*dt;
+      if(!o.chk&&o.y+50>=412){o.chk=1;
+        if(Math.abs(o.x+75-g.bx)<88){o.d=1;
+          if(o.g){g.poin+=10;g.ok++;Sfx.coin();g.fb=['Tepat! +10','#1f8a4c']}else{g.nyawa--;Sfx.hurt();g.fb=['Itu bukan sikap Pancasila!','#d63a45']}
+          g.fbT=55;$('tgPoin').textContent=g.poin;$('tgNyawa').textContent=Math.max(0,g.nyawa)}}});
+    g.it=g.it.filter(o=>!o.d&&o.y<490);
+  }
   tgDraw();
-  if(g.nyawa<=0||(g.i>=g.items.length&&!g.it.length)){tgEnd();return}
+  if(g.nyawa<=0||(g.i>=g.items.length&&!g.it.length&&g.cdMs<=0)){tgEnd();return}
   tgRaf=requestAnimationFrame(tgLoop);
 }
 function tgDraw(){
   const g=tg,c=g.c,gr=c.createLinearGradient(0,0,0,480);gr.addColorStop(0,'#8fd8ff');gr.addColorStop(1,'#e8f8ff');c.fillStyle=gr;c.fillRect(0,0,360,480);
-  c.font='700 12px system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';
-  g.it.forEach(o=>{c.fillStyle='#fff';c.strokeStyle='#16225e';c.lineWidth=2;c.beginPath();c.rect(o.x,o.y,130,44);c.fill();c.stroke();c.fillStyle='#16225e';const w=o.t.split(' '),h=Math.ceil(w.length/2);c.fillText(w.slice(0,h).join(' '),o.x+65,o.y+16);c.fillText(w.slice(h).join(' '),o.x+65,o.y+31)});
-  c.font='42px system-ui,Apple Color Emoji,sans-serif';c.fillText('🧺',g.bx,440);
+  c.font='700 13px system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';
+  g.it.forEach(o=>{c.fillStyle='#fff';c.strokeStyle='#16225e';c.lineWidth=2;c.beginPath();c.rect(o.x,o.y,150,50);c.fill();c.stroke();c.fillStyle='#16225e';const w=o.t.split(' '),h=Math.ceil(w.length/2);c.fillText(w.slice(0,h).join(' '),o.x+75,o.y+19);c.fillText(w.slice(h).join(' '),o.x+75,o.y+36)});
+  c.font='52px system-ui,Apple Color Emoji,sans-serif';c.fillText('🧺',g.bx,446);
   if(g.fbT>0){g.fbT--;c.font='800 16px system-ui,sans-serif';c.fillStyle=g.fb[1];c.fillText(g.fb[0],180,24)}
+  if(g.run&&g.cdMs>0){c.fillStyle='#16225e';c.font='800 22px system-ui,sans-serif';c.fillText('Bersiap...',180,190);c.font='800 110px system-ui,sans-serif';c.fillText(String(Math.ceil(g.cdMs/900)),180,270)}
 }
 function tgEnd(){
   const g=tg;g.end=true;save.tg=save.tg||{best:0,plays:0};save.tg.plays++;if(g.poin>save.tg.best)save.tg.best=g.poin;persist();Cloud.push();
@@ -1564,6 +1683,45 @@ function tgEnd(){
 $('btnTgAgain').onclick=tgStart;
 $('btnCkAgain').onclick=ckStart;
 $('btnCocok').onclick=()=>{Sfx.init();ckStart()};
+
+/* ---------- toko kecil ---------- */
+function SH(){save.shop=save.shop||{spent:0,own:{},qty:{}};save.shop.own=save.shop.own||{};save.shop.qty=save.shop.qty||{};return save.shop}
+function dompet(){
+  const me=save.members[save.me||0]||save.members[0];let k=0;
+  Object.values(save.progress).forEach(p=>{if(save.mode==='solo'||!p.by||p.by===me.nama)k+=p.coins||0});
+  return Math.max(0,k-(SH().spent||0));
+}
+let tkAsk=null,tkT=0;
+function renderToko(){
+  if(!save)save=load();if(!save){show('home');return}
+  const sh=SH(),w=dompet(),me=save.members[save.me||0]||save.members[0];
+  $('tkSaldo').textContent=w;
+  try{const cc=$('tkCv').getContext('2d');cc.clearRect(0,0,120,140);drawAvatar(cc,60,132,2.2,me.ava,{t:0,blink:false,dir:1})}catch(e){}
+  const list=$('tkList');list.innerHTML='';
+  SHOP.forEach(it=>{
+    const aks=it.jenis==='aks',own=aks&&!!sh.own[it.id],qty=sh.qty[it.id]||0;
+    const row=mk('div','tkrow'),mid=mk('div','mid');
+    mid.append(mk('b','',it.nama),mk('small','',it.ket+(aks?'':' Punya: '+qty)));
+    const b=mk('button','btn kecil');b.type='button';
+    if(own){
+      const on=me.ava.acc===it.id;b.textContent=on?'Lepas':'Pakai';
+      if(on)b.style.cssText='--t:#16225e;background:#e5ebff;box-shadow:0 3px 0 #b9c6f0';else b.classList.add('biru');
+      b.onclick=()=>{me.ava.acc=on?'tidak':it.id;persist();renderToko()};
+    }else{
+      b.textContent='🪙 '+(tkAsk===it.id?'Yakin? Ketuk lagi':it.harga);
+      if(w<it.harga)b.classList.add('lock');
+      b.onclick=()=>{
+        if(w<it.harga){toast('Koinmu belum cukup. Kumpulkan lagi di misi lari!',2400);return}
+        if(tkAsk!==it.id){tkAsk=it.id;clearTimeout(tkT);tkT=setTimeout(()=>{tkAsk=null;if(!$('toko').hidden)renderToko()},3000);renderToko();return}
+        clearTimeout(tkT);tkAsk=null;sh.spent=(sh.spent||0)+it.harga;
+        if(aks)sh.own[it.id]=1;else sh.qty[it.id]=qty+1;
+        persist();Sfx.coin();toast('Berhasil dibeli: '+it.nama,2000);renderToko();
+      };
+    }
+    row.append(mk('div','ik',it.ikon),mid,b);list.appendChild(row);
+  });
+}
+$('btnToko').onclick=()=>{Sfx.init();show('toko')};
 
 /* ---------- papan peringkat ---------- */
 let rankTab='solo';
@@ -1607,7 +1765,7 @@ function openRef(key){
 }
 $('btnRfOk').onclick=()=>{
   const qs=refQs(rfKey),a=qs.map((_,i)=>$('rf'+i).value.trim()),err=$('rfErr');
-  if(a.some(x=>wc(x)<8)){err.textContent='Setiap pertanyaan perlu dijawab dengan minimal 8 kata.';err.hidden=false;return}
+  if(a.some(x=>wc(x)<1)){err.textContent='Setiap pertanyaan perlu dijawab.';err.hidden=false;return}
   if(!rfConf){err.textContent='Pilih seberapa yakin kamu.';err.hidden=false;return}
   save.ref[rfKey]={a:a,k:rfConf,ts:Date.now()};persist();Cloud.push();
   toast('Refleksi tersimpan. Terima kasih sudah jujur!');show('map');
