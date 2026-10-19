@@ -1118,7 +1118,7 @@ function show(id){
   if(id==='home')renderHome();
   if(id==='map')renderMap();
   if(id==='designer')animDes();
-  if(id==='rank')renderRank();
+  if(id==='rank'){renderRank();if(window.__pollRank)window.__pollRank()}
   if(id==='toko')renderToko();
   if(id==='guru')renderGuru();
 }
@@ -1198,7 +1198,7 @@ $('btnDesBack').onclick=()=>{if(desIdx>0){save.members[desIdx].ava=Object.assign
 $('btnDesOk').onclick=()=>{
   save.members[desIdx].ava=Object.assign({},cur);
   if(desIdx<save.members.length-1){desIdx++;openDesigner();toast('Karakter tersimpan. Giliran anggota berikutnya.')}
-  else{save.ready=true;save.tp=1;persist();show('tujuan');$('btnTujuanOk').textContent='Mulai Bertualang';$('btnTujuanOk').onclick=()=>{$('btnTujuanOk').textContent='Mulai Misi';show('map')}}
+  else{save.ready=true;save.tp=1;persist();Cloud.push();show('tujuan');$('btnTujuanOk').textContent='Mulai Bertualang';$('btnTujuanOk').onclick=()=>{$('btnTujuanOk').textContent='Mulai Misi';show('map')}}
 };
 
 /* peta */
@@ -1723,31 +1723,33 @@ function renderToko(){
 }
 $('btnToko').onclick=()=>{Sfx.init();show('toko')};
 
-/* ---------- papan peringkat LIVE ---------- */
+/* ---------- papan peringkat ---------- */
 let rankTab='solo';
-$('btnRank').onclick=()=>{show('rank');renderRank()};
+$('btnRank').onclick=()=>show('rank');
 document.querySelectorAll('#rkTabs button').forEach(b=>b.onclick=()=>{rankTab=b.dataset.t;renderRank()});
+function myRankRow(){
+  if(!save||!save.ready)return null;
+  const t=totals();
+  return {id:Cloud.uid||'me',nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t.s,koin:t.k,misi:Object.keys(save.progress).length,cocok:save.cocok.best,ts:Date.now()};
+}
 function renderRank(){
   document.querySelectorAll('#rkTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===rankTab));
   const note=$('rankNote'),list=$('rankList');list.innerHTML='';
-  let rows;
+  const me=myRankRow();let rows;
   if(!Cloud.ok){
-    note.textContent='Mode lokal: hanya skor pada perangkat ini yang tampil. Untuk papan peringkat live lintas HP, game harus dibuka melalui tautan hosting dengan Firebase aktif.';
-    const t=totals(),m=save?Object.keys(save.progress).length:0;
-    rows=save?[{id:'me',nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t.s,koin:t.k,misi:m,cocok:save.cocok.best,selesai:m>=SOAL.length}]:[];
+    note.textContent='Peringkat kelas aktif jika game dibuka dari tautan guru dan kamu masuk dengan akunmu. Untuk sementara hanya skormu yang tampil.';
+    rows=me?[me]:[];
   }else{
-    note.textContent='🔴 LIVE · Skor sementara ikut dihitung sebelum permainan selesai. Peringkat diperbarui otomatis. Urutan: bintang, koin, lalu skor Cocokkan Nilai.';
-    rows=Cloud.rows.slice();
+    note.textContent='Peringkat langsung (diperbarui otomatis). Pemain yang masih bermain juga tampil. Urutan: bintang, koin, lalu skor Cocokkan Nilai.';
+    rows=Cloud.rows.filter(r=>!me||r.id!==me.id);
+    if(me)rows.push(me); /* skormu selalu yang terbaru */
   }
   rows=rows.filter(r=>r.mode===rankTab).sort((a,b)=>(b.bintang-a.bintang)||(b.koin-a.koin)||((b.cocok||0)-(a.cocok||0)));
-  if(!rows.length){list.appendChild(mk('p','kw',rankTab==='solo'?'Belum ada pemain individu yang tercatat.':'Belum ada tim yang tercatat.'));return}
+  if(!rows.length){list.appendChild(mk('p','kw',rankTab==='solo'?'Belum ada pemain individu. Jadilah yang pertama!':'Belum ada tim. Jadilah yang pertama!'));return}
+  const total=SOAL.length;
   rows.forEach((r,i)=>{
     const d=mk('div','rankrow'+((r.id===Cloud.uid||r.id==='me')?' me':''));
-    const mid=mk('div');
-    const misi=Number(r.misi)||0;
-    const persen=Math.min(100,Math.round(misi/Math.max(1,SOAL.length)*100));
-    const status=r.selesai||misi>=SOAL.length?'✅ Selesai':'🟢 Sedang bermain';
-    mid.append(mk('b','',r.nama||'Tanpa nama'),mk('small','',misi+' misi ('+persen+'%) · '+status+' · Cocokkan '+(r.cocok||0)+' poin'));
+    const mid=mk('div');mid.append(mk('b','',r.nama||'Tanpa nama'),mk('small','',(r.misi||0)+'/'+total+' misi'+((r.misi||0)<total?' (masih bermain)':' (tamat)')+' · Cocokkan '+(r.cocok||0)+' poin'));
     d.append(mk('span','no',i+1),mid,mk('div','sc','★ '+(r.bintang||0)+' · '+(r.koin||0)+' koin'));
     list.appendChild(d)});
 }
@@ -1900,41 +1902,29 @@ Cloud.init();
  if(FB||SH){
   let ID='';try{ID=localStorage.getItem('pp-id')||''}catch(e){}
   if(!ID){ID=Math.random().toString(36).slice(2,10);try{localStorage.setItem('pp-id',ID)}catch(e){}}
-  const net={sig:'',rankSig:'',
+  const net={sig:'',
    async push(){
     if(!save||!save.ready)return;
-    const s=save,t=totals(),m=Object.keys(s.progress).length;
-    const pub={nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,bintang:t.s,koin:t.k,misi:m,
-      cocok:s.cocok.best,cocokAkurasi:s.cocok.acc,cocokMain:s.cocok.plays,refleksi:Object.keys(s.ref).length,
-      selesai:m>=SOAL.length,ts:Date.now()};
-    /* Simpan skor publik agar semua perangkat dapat melihat peringkat yang sama. */
-    if(FB)fetch(FB+'/pemain/'+ID+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pub)}).catch(()=>{});
-    if(FB&&s.mode==='tim'&&timCode())fetch(FB+'/tim/'+timCode()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify(timDoc())}).catch(()=>{});
-    if(SH){const j={};Object.keys(s.progress).forEach(i=>{const p=s.progress[i];j[SOAL[i]?SOAL[i].w+'-'+(i%3+1):i]={bintang:p.stars,jawaban:p.answer,oleh:p.by||''}});
-     fetch(SH,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:ID,nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,anggota:s.members.map(m=>m.nama).join(', '),misi:m,bintang:t.s,koin:t.k,cocok:s.cocok.best,akurasi:s.cocok.acc,tangkap:(s.tg&&s.tg.best)||0,refleksi:Object.keys(s.ref).length,detail:j,refleksiIsi:s.ref,ts:Date.now()})}).catch(()=>{})}
+    if(FB){const t0=totals();fetch(FB+'/pemain/'+ID+'.json',{method:'PUT',body:JSON.stringify({nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t0.s,koin:t0.k,misi:Object.keys(save.progress).length,cocok:save.cocok.best,ts:Date.now()})}).catch(()=>{})}
+    if(FB&&save.mode==='tim'&&timCode())fetch(FB+'/tim/'+timCode()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify(timDoc())}).catch(()=>{});
+    if(SH){const s=save,t=totals(),j={};Object.keys(s.progress).forEach(i=>{const p=s.progress[i];j[SOAL[i]?SOAL[i].w+'-'+(i%3+1):i]={bintang:p.stars,jawaban:p.answer,oleh:p.by||''}});
+     fetch(SH,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:ID,nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,anggota:s.members.map(m=>m.nama).join(', '),misi:Object.keys(s.progress).length,bintang:t.s,koin:t.k,cocok:s.cocok.best,akurasi:s.cocok.acc,tangkap:(s.tg&&s.tg.best)||0,refleksi:Object.keys(s.ref).length,detail:j,refleksiIsi:s.ref,ts:Date.now()})}).catch(()=>{})}
+   },
+   rsig:'',
+   async pollRank(){
+    if(!FB||document.hidden)return;
+    try{const r=await fetch(FB+'/pemain.json'),o=await r.json()||{},rows=Object.keys(o).map(k=>Object.assign({id:k},o[k])),sig=JSON.stringify(rows);
+     if(sig!==net.rsig){net.rsig=sig;Cloud.rows=rows;if(visible('rank'))renderRank()}}catch(e){}
    },
    async poll(){
-    if(!FB||document.hidden)return;
-    /* Tarik papan peringkat bersama secara berkala, termasuk pemain yang belum selesai. */
-    try{
-      const r=await fetch(FB+'/pemain.json');
-      if(r.ok){
-        const o=await r.json(),nt=Object.entries(o||{}).map(([id,v])=>Object.assign({id},v||{}));
-        const sig=JSON.stringify(nt);
-        if(sig!==net.rankSig){
-          net.rankSig=sig;Cloud.rows=nt;onCloud();
-        }
-      }
-    }catch(e){}
-    /* Sinkronisasi anggota tim tetap dipertahankan seperti versi sebelumnya. */
-    if(!save||save.mode!=='tim'||!timCode())return;
+    if(!FB||!save||save.mode!=='tim'||document.hidden||!timCode())return;
     try{const r=await fetch(FB+'/tim/'+timCode()+'.json'),o=await r.json(),nt=Object.values(o||{}),sig=JSON.stringify(nt);if(sig!==net.sig){net.sig=sig;Cloud.tim=nt;timMerge()}}catch(e){}
    }};
   Cloud.ok=!!FB;Cloud.uid=ID;
-  Cloud.push=function(){if(!save||!save.ready)return;clearTimeout(this.t);this.t=setTimeout(()=>net.push(),250)};
-  setInterval(()=>net.poll(),2500);
-  /* Publikasikan skor tersimpan saat pemain membuka kembali game. */
-  if(save&&save.ready)setTimeout(()=>net.push(),300);
+  Cloud.push=function(){if(!save||!save.ready)return;clearTimeout(this.t);this.t=setTimeout(()=>net.push(),700)};
+  setInterval(()=>net.poll(),4000);
+  setInterval(()=>{if(visible('rank'))net.pollRank()},5000);
+  net.pollRank();window.__pollRank=()=>net.pollRank();
  }
 }
 
