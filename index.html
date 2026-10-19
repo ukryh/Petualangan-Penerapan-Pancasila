@@ -264,6 +264,7 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
 <section class="screen" id="setup" hidden>
   <div class="top"><button class="btn ghost kecil" data-go="home">‹ Kembali</button><h2 id="setupTitle">Siapkan Pemain</h2><span></span></div>
   <div class="panel">
+    <div id="kelasForm" hidden><label class="f">Kelas kamu</label><div class="sw" id="kelasBox"></div><input type="hidden" id="inKelas"></div>
     <div id="soloForm">
       <label class="f" for="inNama">Nama kamu</label>
       <input type="text" id="inNama" maxlength="20" placeholder="Contoh: Aisyah" autocomplete="off">
@@ -1130,9 +1131,14 @@ $('btnSolo').onclick=()=>openSetup('solo');
 $('btnTim').onclick=()=>openSetup('tim');
 $('btnLanjut').onclick=()=>{Sfx.init();show('map')};
 
+/* kelas: config.js boleh kelas:'7A' (satu kelas) atau kelas:['7I','7E'] (murid memilih sendiri) */
+function daftarKelas(){const k=(window.PP_CONFIG||{}).kelas;return Array.isArray(k)&&k.length?k.map(String):null}
+function kelasAktif(){const k=(window.PP_CONFIG||{}).kelas;if(Array.isArray(k))return (save&&save.kelas)||'';return k?String(k):''}
 /* siapkan pemain */
 function openSetup(m){
   mode=m;Sfx.init();
+  {const dk=daftarKelas(),kf=$('kelasForm'),kb=$('kelasBox');kf.hidden=!dk;kb.innerHTML='';$('inKelas').value='';
+   if(dk)dk.forEach(k=>{const x=mk('button','txt',k);x.type='button';x.onclick=()=>{$('inKelas').value=k;[].forEach.call(kb.children,y=>y.classList.toggle('on',y===x))};kb.appendChild(x)})}
   $('soloForm').hidden=m!=='solo';$('timForm').hidden=m!=='tim';
   $('setupTitle').textContent=m==='solo'?'Mode Individu':'Mode Tim';
   $('setupErr').hidden=true;
@@ -1142,6 +1148,8 @@ function openSetup(m){
 }
 $('btnSetupOk').onclick=()=>{
   const err=$('setupErr');let members=[],team='';
+  const kelasPilih=daftarKelas()?$('inKelas').value:'';
+  if(daftarKelas()&&!kelasPilih){err.textContent='Pilih kelasmu dulu.';err.hidden=false;return}
   if(mode==='solo'){
     const n=$('inNama').value.trim();
     if(n.length<2){err.textContent='Tulis namamu dulu (minimal 2 huruf).';err.hidden=false;return}
@@ -1152,7 +1160,7 @@ $('btnSetupOk').onclick=()=>{
     if(team.length<2){err.textContent='Pilih kelompokmu dulu.';err.hidden=false;return}
     if(members.length<1||members[0].nama.length<2){err.textContent='Tulis namamu dulu (minimal 2 huruf).';err.hidden=false;return}
   }
-  save=norm({mode,team,members,progress:{},ready:false,fresh:true});
+  save=norm({mode,team,kelas:kelasPilih,members,progress:{},ready:false,fresh:true});
   desIdx=0;openDesigner();
 };
 
@@ -1525,7 +1533,7 @@ function gabung(txt){
 }
 /* ===== SINKRON TIM OTOMATIS (db): hasil dan misi yang sedang dikerjakan tampil di semua anggota ===== */
 function timRoster(){const s=new Set(save.members.map(m=>m.nama));(Cloud.tim||[]).forEach(d=>{if(d.kode===timCode()&&d.nama)s.add(d.nama)});return [...s]}
-function timCode(){return ((window.PP_CONFIG&&window.PP_CONFIG.kelas)?String(window.PP_CONFIG.kelas).toLowerCase().replace(/[^a-z0-9]/g,'')+'-':'')+String(save&&save.team||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function timCode(){return (kelasAktif()?kelasAktif().toLowerCase().replace(/[^a-z0-9]/g,'')+'-':'')+String(save&&save.team||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function timDoc(){const me=save.members[save.me||0].nama,m={};Object.keys(save.progress).forEach(i=>{const r=save.progress[i];if(!r.by||r.by===me)m[i]=[r.stars,r.coins,r.ticked,r.total]});return {kode:timCode(),nama:me,m,c:save.claim==null?-1:save.claim,ts:Date.now()}}
 function timMerge(){
   if(!save||save.mode!=='tim'||!Cloud.ok)return;
@@ -1900,20 +1908,21 @@ Cloud.init();
 {
  const CF=window.PP_CONFIG||{},FB=String(CF.firebaseUrl||'').replace(/\/+$/,''),SH=String(CF.sheetUrl||'');
  if(FB||SH){
+  const pem=()=>{const k=kelasAktif().toLowerCase().replace(/[^a-z0-9]/g,'');return k?'pemain-'+k:'pemain'}; /* papan peringkat dipisah per kelas */
   let ID='';try{ID=localStorage.getItem('pp-id')||''}catch(e){}
   if(!ID){ID=Math.random().toString(36).slice(2,10);try{localStorage.setItem('pp-id',ID)}catch(e){}}
   const net={sig:'',
    async push(){
     if(!save||!save.ready)return;
-    if(FB){const t0=totals();fetch(FB+'/pemain/'+ID+'.json',{method:'PUT',body:JSON.stringify({nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t0.s,koin:t0.k,misi:Object.keys(save.progress).length,cocok:save.cocok.best,ts:Date.now()})}).catch(()=>{})}
+    if(FB){const t0=totals();fetch(FB+'/'+pem()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify({nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t0.s,koin:t0.k,misi:Object.keys(save.progress).length,cocok:save.cocok.best,ts:Date.now()})}).catch(()=>{})}
     if(FB&&save.mode==='tim'&&timCode())fetch(FB+'/tim/'+timCode()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify(timDoc())}).catch(()=>{});
     if(SH){const s=save,t=totals(),j={};Object.keys(s.progress).forEach(i=>{const p=s.progress[i];j[SOAL[i]?SOAL[i].w+'-'+(i%3+1):i]={bintang:p.stars,jawaban:p.answer,oleh:p.by||''}});
-     fetch(SH,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:ID,nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,anggota:s.members.map(m=>m.nama).join(', '),misi:Object.keys(s.progress).length,bintang:t.s,koin:t.k,cocok:s.cocok.best,akurasi:s.cocok.acc,tangkap:(s.tg&&s.tg.best)||0,refleksi:Object.keys(s.ref).length,detail:j,refleksiIsi:s.ref,ts:Date.now()})}).catch(()=>{})}
+     fetch(SH,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:ID,kelas:kelasAktif(),nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,anggota:s.members.map(m=>m.nama).join(', '),misi:Object.keys(s.progress).length,bintang:t.s,koin:t.k,cocok:s.cocok.best,akurasi:s.cocok.acc,tangkap:(s.tg&&s.tg.best)||0,refleksi:Object.keys(s.ref).length,detail:j,refleksiIsi:s.ref,ts:Date.now()})}).catch(()=>{})}
    },
    rsig:'',
    async pollRank(){
     if(!FB||document.hidden)return;
-    try{const r=await fetch(FB+'/pemain.json'),o=await r.json()||{},rows=Object.keys(o).map(k=>Object.assign({id:k},o[k])),sig=JSON.stringify(rows);
+    try{const r=await fetch(FB+'/'+pem()+'.json'),o=await r.json()||{},rows=Object.keys(o).map(k=>Object.assign({id:k},o[k])),sig=JSON.stringify(rows);
      if(sig!==net.rsig){net.rsig=sig;Cloud.rows=rows;if(visible('rank'))renderRank()}}catch(e){}
    },
    async poll(){
