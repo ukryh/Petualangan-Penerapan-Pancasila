@@ -1750,6 +1750,8 @@ function renderRank(){
   }else{
     note.textContent='Peringkat langsung (diperbarui otomatis). Pemain yang masih bermain juga tampil. Urutan: bintang, koin, lalu skor Cocokkan Nilai.';
     rows=Cloud.rows.filter(r=>!me||r.id!==me.id);
+    const nIndiv=rows.filter(r=>r.mode==='solo').length;
+    note.textContent+=' Kelas: '+(kelasAktif()||'umum')+' · teman individu terbaca: '+nIndiv+'.'+(Cloud.diagR?' ⚠ '+Cloud.diagR:'')+(Cloud.diagW?' ⚠ '+Cloud.diagW:'');
     if(me)rows.push(me); /* skormu selalu yang terbaru */
   }
   rows=rows.filter(r=>r.mode===rankTab).sort((a,b)=>(b.bintang-a.bintang)||(b.koin-a.koin)||((b.cocok||0)-(a.cocok||0)));
@@ -1914,7 +1916,7 @@ Cloud.init();
   const net={sig:'',
    async push(){
     if(!save||!save.ready)return;
-    if(FB){const t0=totals();fetch(FB+'/'+pem()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify({nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t0.s,koin:t0.k,misi:Object.keys(save.progress).length,cocok:save.cocok.best,ts:Date.now()})}).catch(()=>{})}
+    if(FB){const t0=totals();fetch(FB+'/'+pem()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify({nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t0.s,koin:t0.k,misi:Object.keys(save.progress).length,cocok:save.cocok.best,ts:Date.now()})}).then(r=>{Cloud.diagW=r.ok?'':'GAGAL KIRIM skor (kode '+r.status+'): Firebase menolak tulis. Ubah Rules agar .write true.';if(visible('rank'))renderRank()}).catch(e=>{Cloud.diagW='GAGAL KIRIM skor: tidak bisa terhubung ke Firebase.';if(visible('rank'))renderRank()})}
     if(FB&&save.mode==='tim'&&timCode())fetch(FB+'/tim/'+timCode()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify(timDoc())}).catch(()=>{});
     if(SH){const s=save,t=totals(),j={};Object.keys(s.progress).forEach(i=>{const p=s.progress[i];j[SOAL[i]?SOAL[i].w+'-'+(i%3+1):i]={bintang:p.stars,jawaban:p.answer,oleh:p.by||''}});
      fetch(SH,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:ID,kelas:kelasAktif(),nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,anggota:s.members.map(m=>m.nama).join(', '),misi:Object.keys(s.progress).length,bintang:t.s,koin:t.k,cocok:s.cocok.best,akurasi:s.cocok.acc,tangkap:(s.tg&&s.tg.best)||0,refleksi:Object.keys(s.ref).length,detail:j,refleksiIsi:s.ref,ts:Date.now()})}).catch(()=>{})}
@@ -1922,8 +1924,10 @@ Cloud.init();
    rsig:'',
    async pollRank(){
     if(!FB||document.hidden)return;
-    try{const r=await fetch(FB+'/'+pem()+'.json'),o=await r.json()||{},rows=Object.keys(o).map(k=>Object.assign({id:k},o[k])),sig=JSON.stringify(rows);
-     if(sig!==net.rsig){net.rsig=sig;Cloud.rows=rows;if(visible('rank'))renderRank()}}catch(e){}
+    try{const r=await fetch(FB+'/'+pem()+'.json');
+     if(!r.ok){Cloud.diagR='GAGAL BACA peringkat (kode '+r.status+'): Firebase menolak baca. Ubah Rules agar .read true.';if(visible('rank'))renderRank();return}
+     const o=(await r.json())||{},rows=Object.keys(o).map(k=>Object.assign({id:k},o[k])),sig=JSON.stringify(rows);Cloud.diagR='';
+     if(sig!==net.rsig){net.rsig=sig;Cloud.rows=rows}if(visible('rank'))renderRank()}catch(e){Cloud.diagR='GAGAL BACA peringkat: tidak bisa terhubung ke Firebase.';if(visible('rank'))renderRank()}
    },
    async poll(){
     if(!FB||!save||save.mode!=='tim'||document.hidden||!timCode())return;
@@ -1933,7 +1937,7 @@ Cloud.init();
   Cloud.push=function(){if(!save||!save.ready)return;clearTimeout(this.t);this.t=setTimeout(()=>net.push(),700)};
   setInterval(()=>net.poll(),4000);
   setInterval(()=>{if(visible('rank'))net.pollRank()},5000);
-  net.pollRank();window.__pollRank=()=>net.pollRank();
+  net.pollRank();window.__pollRank=()=>{net.pollRank();if(save&&save.ready)net.push()};
  }
 }
 
