@@ -1,5 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Petualangan Pancasila</title>
+<meta name="author" content="Umi Khoiriyah 2500103916154006">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -324,13 +325,14 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
     <div class="hud"><span class="chip">Koin <b id="pCoin">0</b></span><span class="chip" id="pPos">Jarak <b>0%</b></span><span class="chip" id="pShield" hidden>🛡️ Perisai aktif</span><button class="pause" id="btnPause">Jeda</button></div>
     <div class="intro" id="playIntro"><div class="card"><h3 id="introT"></h3><div class="ibody"><p id="introP"></p></div><button class="btn kecil" id="btnShield" type="button" hidden style="margin-top:8px;--t:#16225e;background:#cfeeff;box-shadow:0 3px 0 #9fcbe8"></button><button class="btn hijau" id="btnMulai" style="margin-top:8px">Mulai Lari</button><button class="btn kecil" id="btnIntroBack" type="button" style="--t:#16225e;background:#e5ebff;box-shadow:0 3px 0 #b9c6f0">‹ Kembali ke Peta</button></div></div>
   </div>
-  <div class="pads">
+  <div class="pads" id="padsBox" hidden>
     <button class="pad" id="padL" aria-label="Kiri">◀</button>
     <button class="pad" id="padR" aria-label="Kanan">▶</button>
     <span></span>
     <button class="pad jump" id="padJ" aria-label="Lompat">LOMPAT</button>
   </div>
-  <p class="tip">Papan ketik: panah kiri/kanan untuk jalan, spasi atau panah atas untuk lompat.</p>
+  <p class="tip">Sentuh layar permainan: <b>seperempat kiri</b> = jalan kiri, <b>seperempat tengah</b> = jalan kanan, <b>separuh kanan</b> = lompat (tahan = lebih tinggi). Papan ketik: panah atau A/D untuk jalan, spasi untuk lompat.</p>
+  <div class="row" style="justify-content:center"><button class="btn ghost kecil" id="btnPadsTog" type="button">Tampilkan tombol layar</button></div>
 </section>
 
 <!-- SOAL -->
@@ -386,7 +388,7 @@ table.gt{border-collapse:collapse;width:100%;min-width:680px;font-size:.9rem}
     <div class="tgwrap" id="tgWrap">
       <canvas id="tgCv" width="360" height="480" style="display:block;touch-action:none;border-radius:16px"></canvas>
       <div class="tgov" id="tgStartBox"><div class="card"><h3>🧺 Tangkap Nilai</h3>
-        <div class="ibody"><p>Geser keranjang ke kiri dan kanan.</p><p>✅ Tangkap kartu sikap yang <b>sesuai</b> Pancasila (+10 poin).</p><p>❌ Hindari sikap yang <b>bertentangan</b> (nyawa berkurang).</p><p>Kartu jatuh pelan dulu, lalu makin cepat. Baca dulu, tekan Mulai kalau sudah siap.</p></div>
+        <div class="ibody"><p><b>Cara main:</b> geser keranjang (sentuh dan geser jarimu di layar atau di bawahnya, atau pakai tombol ◀ ▶) sampai bingkai kuningnya berada di bawah kartu yang jatuh.</p><p><b>Kapan tertangkap?</b> Kartu tertangkap saat ia menyentuh bingkai kuning. Jadi kamu masih bisa menggeser keranjang sampai detik kartu itu menyentuh bingkai.</p><p>✅ Kartu <b>sesuai</b> Pancasila yang tertangkap: +10 poin. Kalau lewat, tidak ada poin tetapi nyawa aman.</p><p>❌ Kartu <b>bertentangan</b> yang tertangkap: nyawa -1. Biarkan lewat saja.</p><p>Ada 3 nyawa. Kartu jatuh pelan dulu, lalu makin cepat. Tekan Mulai kalau sudah siap.</p></div>
         <button class="btn kecil" id="btnTgNyawa" type="button" hidden style="--t:#16225e;background:#ffe0e3;box-shadow:0 3px 0 #f0b5bb"></button><button class="btn hijau" id="btnTgMulai" type="button">Mulai</button></div></div>
       <div class="tgov" id="tgEnd" hidden><div class="card"><div class="big" id="tgSkor">0</div><p id="tgDet" style="font-weight:800;margin:4px 0"></p><div class="row" style="justify-content:center"><button class="btn hijau" id="btnTgAgain" type="button">Main Lagi</button><button class="btn ghost kecil" data-go="map" type="button" style="--t:#16225e;background:#e5ebff">Ke Peta</button></div></div></div>
     </div>
@@ -859,7 +861,7 @@ const Game=(()=>{
  function mul(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
  function gen(idx,wd){
-  const f=CH[idx]?CH[idx].f:{},K=idx%3,R=mul(900+idx*131),dif=idx/14,L=2700+idx*60;
+  const f=CH[idx]?CH[idx].f:{},K=idx%3,R=mul(900+idx*131),dif=Math.min(1,idx/14),L=2700+idx*60;
   const plats=[],coins=[],gems=[],en=[],sp=[],pads=[],kk=[];
   plats.push({x:0,y:GY,w:560,h:100,g:1});
   let x=560,segs=[plats[0]];
@@ -875,10 +877,10 @@ const Game=(()=>{
   segs.forEach((s,i)=>{
    if(f.en&&i>0&&s.w>=260&&en.length<2+Math.round(f.en*2)&&R()<.7){const a=s.x+34,b=s.x+s.w-34;en.push({x:a+R()*(b-a),y:GY,a,b,vx:(R()<.5?-1:1)*(.8+R()*.4+dif*.5),dead:0,sq:0})}
    if(i>0&&i<segs.length-1&&R()<.65){
-    const pw=96+R()*40,px=s.x+50+R()*Math.max(10,s.w-pw-100),py=GY-88-R()*18;
+    const pw=96+R()*40,px=s.x+50+R()*Math.max(10,s.w-pw-100),py=GY-68-R()*14;
     plats.push({x:px,y:py,w:pw,h:18,g:0});
     for(let k=0;k<4;k++)coins.push({x:px+16+k*(pw-32)/3,y:py-22});
-    if(R()<.4){const q=96,qy=py-82;plats.push({x:px+pw/2-q/2,y:qy,w:q,h:18,g:0});gems.push({x:px+pw/2,y:qy-24});}
+    if(R()<.4){const q=96,qy=py-64;plats.push({x:px+pw/2-q/2,y:qy,w:q,h:18,g:0});gems.push({x:px+pw/2,y:qy-24});}
    }
    if(f.st&&i>0&&s.w>=240&&R()<.8){for(let q=0;q<3;q++){plats.push({x:s.x+70+q*46,y:GY-24*(q+1),w:46,h:24*(q+1),g:0});coins.push({x:s.x+93+q*46,y:GY-24*(q+1)-22})}}
    if(f.sp&&i>0&&s.w>=220&&R()<.75)sp.push({x:s.x+60+R()*(s.w-130),w:34});
@@ -898,10 +900,10 @@ const Game=(()=>{
   c=cv.getContext('2d');c.setTransform(1280/W,0,0,1280/W,0,0);
   imgs=images||imgs;img=wd%2===0?imgs.a:imgs.b;imgR=img?img.width/img.height:1;
   const lv=gen(idx,wd);
-  S={idx,wd,ava,cb,lv,cam:0,t:0,coins:0,shield:0,
+  S={idx,wd,ava,cb,lv,cam:0,cy:0,rt:0,t:0,coins:0,shield:0,
    p:{x:80,y:GY,vx:0,vy:0,on:true,dir:1,coy:0,jb:0,inv:0,safe:{x:80,y:GY}},
    parts:[],state:'ready',win:0,col:DUNIA[wd].c,sym:DUNIA[wd].sym,msg:0};
-  keys={l:0,r:0,j:0};jHeld=false;paused=false;
+  keys={l:0,r:0,j:0};jHeld=false;paused=false;for(const id in tpts)delete tpts[id];tk.l=tk.r=tk.j=0;bindTouch();
   cb.onCoins&&cb.onCoins(0);cb.onProgress&&cb.onProgress(0);
   loop0();
  }
@@ -923,6 +925,7 @@ const Game=(()=>{
   s.parts.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=.15;q.l--});s.parts=s.parts.filter(q=>q.l>0);
   if(s.state==='win'){s.win++;p.vx*=.9;p.x+=p.vx;if(s.win===70){s.cb.onWin&&s.cb.onWin(s.coins,lv.total)}return}
   if(s.state!=='run'){return}
+  s.rt++;
   // input
   const dir=(keys.r?1:0)-(keys.l?1:0);
   const ic=lv.f.ic;if(dir){p.vx+=dir*(ic?.16:.55);p.dir=dir}else p.vx*=ic?.975:.78;
@@ -959,6 +962,7 @@ const Game=(()=>{
   lv.sp.forEach(k=>{if(!p.inv&&Math.abs(k.x+k.w/2-p.x)<k.w/2+6&&p.y>GY-16&&p.y<GY+6){p.inv=90;p.vx=-5*(p.dir||1);p.vy=-8;p.on=false;if(s.shield){s.shield=0;Sfx.coin();burst(p.x,p.y-20,'#6fd8ff',16,3.5);s.cb.onShield&&s.cb.onShield()}else{const lose=Math.min(3,s.coins);s.coins-=lose;Sfx.hurt();burst(p.x,p.y-20,'#ff6b6b',8,3)}s.cb.onCoins&&s.cb.onCoins(s.coins)}});
   // kamera
   s.cam=Math.max(0,Math.min(lv.L-W,p.x-170));
+  {const tgt=Math.max(0,86-(p.y+CAMY));s.cy+=(tgt-s.cy)*.16;if(s.cy<.05)s.cy=0}
   s.cb.onProgress&&s.cb.onProgress(Math.min(100,Math.round(p.x/lv.flag*100)));
   if(lv.kk.length&&p.x>lv.flag-6&&!lv.kk.every(k=>k.t)){p.x=lv.flag-6;p.vx=0}
   if(p.x>=lv.flag){s.state='win';s.win=0;p.vx=2;Sfx.win();burst(lv.flag,GY-120,'#ffd23a',30,5)}
@@ -1046,7 +1050,7 @@ const Game=(()=>{
  function draw(){
   if(!S)return;const s=S,p=s.p,lv=s.lv,cam=s.cam;
   bgdraw();
-  c.save();c.translate(0,CAMY);
+  c.save();c.translate(0,CAMY+s.cy);
   lv.plats.forEach(pl=>{const x=pl.x-cam;if(x+pl.w<-10||x>W+10)return;block(x,pl.y,pl.w,pl.h,pl.g)});
   lv.sp.forEach(k=>{const x=k.x-cam;if(x<-40||x>W+40)return;for(let q=0;q<3;q++){c.beginPath();c.moveTo(x+q*k.w/3,GY);c.lineTo(x+q*k.w/3+k.w/6,GY-16);c.lineTo(x+(q+1)*k.w/3,GY);c.closePath();fillS(c,'#cfd6e6',1.6)}});
   lv.pads.forEach(d=>{const x=d.x-cam;c.fillStyle='#ff7a3d';c.fillRect(x,GY-10,d.w,10);c.fillStyle='#ffd23a';c.fillRect(x+4,GY-16,d.w-8,6)});
@@ -1062,8 +1066,13 @@ const Game=(()=>{
   if(s.shield){c.save();c.globalAlpha=.3+.1*Math.sin(s.t*.15);c.beginPath();c.arc(p.x-cam,p.y-26,32,0,7);c.fillStyle='#6fd8ff';c.fill();c.globalAlpha=.9;c.lineWidth=2.5;c.strokeStyle='#fff';c.stroke();c.restore()}
   s.parts.forEach(q=>{c.globalAlpha=Math.min(1,q.l/20);c.fillStyle=q.col;c.beginPath();c.arc(q.x-cam,q.y,3,0,7);c.fill()});c.globalAlpha=1;
   c.restore();
-  if(lv.f.dk){const g=c.createRadialGradient(p.x-cam,p.y+CAMY-30,36,p.x-cam,p.y+CAMY-30,150);g.addColorStop(0,'rgba(8,10,40,0)');g.addColorStop(1,'rgba(8,10,40,.94)');c.fillStyle=g;c.fillRect(0,0,W,H)}
-  if(lv.kk.length){c.fillStyle='rgba(20,30,90,.8)';rr(c,8,8,92,24,12);c.fill();c.fillStyle='#fff';c.font='700 13px Fredoka,system-ui,sans-serif';c.textAlign='left';c.textBaseline='middle';c.fillText('🔑 '+lv.kk.filter(k=>k.t).length+'/'+lv.kk.length,16,21)}{c.fillStyle='rgba(20,30,90,.8)';rr(c,W/2-110,46,220,28,14);c.fill();c.fillStyle='#fff';c.font='700 14px Fredoka,system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('Ups! Coba lagi dari sini.',W/2,60)}
+  if(lv.f.dk){const g=c.createRadialGradient(p.x-cam,p.y+CAMY+s.cy-30,36,p.x-cam,p.y+CAMY+s.cy-30,150);g.addColorStop(0,'rgba(8,10,40,0)');g.addColorStop(1,'rgba(8,10,40,.94)');c.fillStyle=g;c.fillRect(0,0,W,H)}
+  if(lv.kk.length){c.fillStyle='rgba(20,30,90,.8)';rr(c,8,8,92,24,12);c.fill();c.fillStyle='#fff';c.font='700 13px Fredoka,system-ui,sans-serif';c.textAlign='left';c.textBaseline='middle';c.fillText('🔑 '+lv.kk.filter(k=>k.t).length+'/'+lv.kk.length,16,21)}if(s.msg>0){c.fillStyle='rgba(20,30,90,.8)';rr(c,W/2-110,46,220,28,14);c.fill();c.fillStyle='#fff';c.font='700 14px Fredoka,system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('Ups! Coba lagi dari sini.',W/2,60)}
+  if(s.state==='run'&&s.rt<420){const a=s.rt<300?1:(420-s.rt)/120;c.save();c.globalAlpha=a;
+   c.setLineDash([5,5]);c.strokeStyle='rgba(255,255,255,.75)';c.lineWidth=1.5;c.beginPath();c.moveTo(W*.25,0);c.lineTo(W*.25,H);c.moveTo(W*.5,0);c.lineTo(W*.5,H);c.stroke();c.setLineDash([]);
+   const zs=[[0,W*.25,'◀','jalan kiri'],[W*.25,W*.25,'▶','jalan kanan'],[W*.5,W*.5,'⤒','sentuh = LOMPAT']];
+   zs.forEach(z=>{c.fillStyle='rgba(20,30,90,.45)';rr(c,z[0]+6,H-62,z[1]-12,52,12);c.fill();c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.font='700 20px system-ui,sans-serif';c.fillText(z[2],z[0]+z[1]/2,H-44);c.font='700 11px system-ui,sans-serif';c.fillText(z[3],z[0]+z[1]/2,H-23)});
+   c.restore()}
   if(s.state==='win'){c.fillStyle='rgba(255,255,255,'+Math.min(.5,s.win/80)+')';c.fillRect(0,0,W,H);
    c.fillStyle='#16225e';c.font='700 34px Fredoka,system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('Misi Tercapai!',W/2,H/2-10)}
  }
@@ -1074,6 +1083,17 @@ const Game=(()=>{
   if(h&&S)e.preventDefault();
  }
  addEventListener('keydown',e=>key(e,1));addEventListener('keyup',e=>key(e,0));
+ /* Sentuh layar: seperempat kiri = jalan kiri, seperempat berikutnya = jalan kanan, separuh kanan = lompat (tahan = lebih tinggi) */
+ let tBound=false;const tpts={},tk={l:0,r:0,j:0};
+ function tzone(e){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width;return x<.25?'l':x<.5?'r':'j'}
+ function tapply(){const n={l:0,r:0,j:0};for(const id in tpts)n[tpts[id]]=1;['l','r','j'].forEach(k=>{if(tk[k]!==n[k]){tk[k]=n[k];keys[k]=n[k]}})}
+ function bindTouch(){
+  if(tBound||!cv)return;tBound=true;
+  cv.addEventListener('pointerdown',e=>{e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(_){}Sfx.init();tpts[e.pointerId]=tzone(e);tapply()});
+  cv.addEventListener('pointermove',e=>{if(tpts[e.pointerId]===undefined)return;tpts[e.pointerId]=tzone(e);tapply()});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(n=>cv.addEventListener(n,e=>{delete tpts[e.pointerId];tapply()}));
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+ }
  function hold(id,k){const b=document.getElementById(id);
   const on=e=>{e.preventDefault();keys[k]=1;b.classList.add('on');Sfx.init()},off=e=>{e.preventDefault();keys[k]=0;b.classList.remove('on')};
   b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(n=>b.addEventListener(n,off));
@@ -1093,7 +1113,7 @@ const CH=[
 {n:'Batu Menggelinding',t:'Batu tidak bisa diinjak! Lompati batu dan hindari duri.',f:{rl:1,sp:1}},
 {n:'Lift Naik-Turun',t:'Naiki lift yang bergerak ke atas dan ke bawah.',f:{ev:1,gb:20}},
 {n:'Gua Gelap',t:'Gelap! Hanya area di sekitarmu yang terlihat.',f:{dk:1,en:1}},
-{n:'Bulan Ringan',t:'Gravitasi rendah: lompatanmu sangat tinggi dan lama.',f:{lg:.55,gb:40,sp:1}},
+{n:'Bulan Ringan',t:'Gravitasi lebih rendah: lompatanmu lebih tinggi dan melayang. Atur waktu lompatmu!',f:{lg:.72,gb:40,sp:1}},
 {n:'Jalur Cepat',t:'Karakter berlari lebih cepat. Atur lompatanmu!',f:{sp2:1.45,sp:1,en:1}},
 {n:'Kunci Gerbang',t:'Kumpulkan 3 kunci sebelum bendera bisa dicapai.',f:{key:1,en:2}},
 {n:'Ujian Akhir',t:'Rakit rapuh, duri, dan Hoaks. Gabungan semua tantangan!',f:{mv:1,fl:1,sp:1,en:2,bd:1,gb:20}}];
@@ -1132,8 +1152,10 @@ $('btnTim').onclick=()=>openSetup('tim');
 $('btnLanjut').onclick=()=>{Sfx.init();show('map')};
 
 /* kelas: config.js boleh kelas:'7A' (satu kelas) atau kelas:['7I','7E'] (murid memilih sendiri) */
-function daftarKelas(){const k=(window.PP_CONFIG||{}).kelas;return Array.isArray(k)&&k.length?k.map(String):null}
-function kelasAktif(){const k=(window.PP_CONFIG||{}).kelas;if(Array.isArray(k))return (save&&save.kelas)||'';return k?String(k):''}
+const KELAS_DEF=['7I','7E']; /* cadangan: jika config.js tidak memuat 'kelas', murid tetap memilih 7I atau 7E */
+function kelasCfg(){const k=(window.PP_CONFIG||{}).kelas;return (k==null||k===''||(Array.isArray(k)&&!k.length))?KELAS_DEF:k}
+function daftarKelas(){const k=kelasCfg();return Array.isArray(k)&&k.length?k.map(String):null}
+function kelasAktif(){const k=kelasCfg();if(Array.isArray(k))return (save&&save.kelas)||'';return k?String(k):''}
 /* siapkan pemain */
 function openSetup(m){
   mode=m;Sfx.init();
@@ -1239,7 +1261,6 @@ function renderMap(){
       if(prevDone&&!done&&!nextFound){b.classList.add('next');nextFound=true}
       b.onclick=()=>startMission(o.i);g.appendChild(b)});
     wrap.appendChild(g);
-    if(doneN===items.length){const rb=document.createElement('button');rb.type='button';const rd=!!save.ref['w'+d.n];rb.className='btn kecil '+(rd?'biru':'hijau');rb.style.marginTop='10px';rb.textContent=rd?'Refleksi ✓ (ubah)':'Isi Refleksi '+d.sila;rb.onclick=()=>openRef('w'+d.n);wrap.appendChild(rb)}
     root.appendChild(wrap);
   });
   mapExtras();
@@ -1252,11 +1273,12 @@ function startMission(idx){
   mis=idx;const q=SOAL[idx],wi=q.w-1,d=DUNIA[wi];
   const k=SOAL.filter(o=>o.w===q.w).indexOf(q)+1;
   curWho=who(idx);
+  if(save.qRun&&save.qRun[idx]&&save.qRun[idx].qi>0){toast('Dilanjutkan dari soal '+(save.qRun[idx].qi+1)+'. Progresmu tersimpan otomatis.',2800);showQuestion(idx,save.qRun[idx].coins||0);return}
   $('playTitle').textContent='Misi '+q.w+'-'+k;
   $('playWho').textContent=curWho.nama;
   $('introT').textContent=d.sym+' '+q.judul;
   $('introP').style.whiteSpace='pre-line';
-  $('introP').textContent='Tingkat '+k+'/3: '+TL[k-1]+'\nTujuan misi: '+KG[k-1]+' penerapan '+d.sila+' ('+q.ctx.toLowerCase()+').\n'+(save.mode==='tim'?'Giliran '+curWho.nama+' mengendalikan karakter. ':'')+''+(CH[idx]?CH[idx].n+': '+CH[idx].t:'')+' Capai bendera di ujung jalan untuk membuka soal misi.';
+  $('introP').textContent='Tingkat '+k+'/3: '+TL[k-1]+'\nTujuan misi: '+KG[k-1]+' penerapan '+d.sila+' ('+q.ctx.toLowerCase()+').\n'+(save.mode==='tim'?'Giliran '+curWho.nama+' mengendalikan karakter. ':'')+''+(CH[idx]?CH[idx].n+': '+CH[idx].t:'')+' Capai bendera di ujung jalan untuk membuka soal misi.\nKontrol: sentuh layar. Kiri = jalan kiri, tengah = jalan kanan, kanan = lompat.';
   $('playIntro').hidden=false;$('btnPause').textContent='Jeda';shieldOn=false;shieldUI();$('pShield').hidden=true;
   show('play');
   Game.start(idx,wi,curWho.ava,{
@@ -1276,6 +1298,9 @@ $('btnPause').onclick=()=>{const p=Game.setPause();$('btnPause').textContent=p?'
 $('btnPlayBack').onclick=()=>show('map');
 $('btnIntroBack').onclick=()=>show('map');
 Game.hold('padL','l');Game.hold('padR','r');Game.hold('padJ','j');
+function padsUI(){let on=false;try{on=localStorage.getItem('pp-pads')==='1'}catch(e){}$('padsBox').hidden=!on;$('btnPadsTog').textContent=on?'Sembunyikan tombol layar':'Tampilkan tombol layar'}
+$('btnPadsTog').onclick=()=>{let on=false;try{on=localStorage.getItem('pp-pads')==='1';localStorage.setItem('pp-pads',on?'0':'1')}catch(e){}padsUI()};
+padsUI();
 
 /* soal: pilihan ganda, pilihan ganda kompleks, benar-salah, urutan */
 const TIPE={pg:'Pilih SATU jawaban yang paling tepat.',pgk:'Pilih SEMUA jawaban yang benar. Pilihan yang salah mengurangi poin.',bs:'Tentukan BENAR atau SALAH untuk setiap pernyataan.',ur:'Ketuk langkah satu per satu, dari yang PERTAMA sampai TERAKHIR.'};
@@ -1288,7 +1313,7 @@ function urRender(){
   qDs.forEach(i=>{const p=qOrd.indexOf(i),b=mk('button','btn-ur'+(p>=0?' on':'')+(qFin?(qOrd[p]===p?' ok':' no'):''),(p>=0?(p+1)+'. ':'')+q.o[i]);b.type='button';
     b.onclick=()=>{if(p<0&&!qFin){qOrd.push(i);urRender()}};box.appendChild(b)});
 }
-function showQuestion(idx,coins){mis=idx;mis_coins=coins;qi=0;qAcc={n:0,t:0,a:[]};qShow()}
+function showQuestion(idx,coins){mis=idx;mis_coins=coins;qi=0;qAcc={n:0,t:0,a:[]};const r=save.qRun&&save.qRun[idx];if(r&&r.qi>0&&r.qi<SOAL[idx].qs.length){qi=r.qi;qAcc={n:r.n||0,t:r.t||0,a:r.a||[]};mis_coins=r.coins||coins}qShow()}
 function qShow(){clearInterval(qTick);
   const idx=mis,S=SOAL[idx],q=Object.assign({},S,S.qs[qi]),d=DUNIA[q.w-1],k=SOAL.filter(o=>o.w===q.w).indexOf(S)+1;cq=q;mediaRender(idx);
   Game.stop();show('soal');
@@ -1336,6 +1361,7 @@ $('btnKirim').onclick=()=>{
   }
   qAcc.n+=n;qAcc.t+=tot;qAcc.a.push('Soal '+(qi+1)+': '+ans);
   if(qi<SOAL[mis].qs.length-1){
+    save.qRun=save.qRun||{};save.qRun[mis]={qi:qi+1,n:qAcc.n,t:qAcc.t,a:qAcc.a,coins:mis_coins};persist();
     qFin=true;if(q.tipe==='ur')urRender();qErr('');$('btnKirim').hidden=true;$('btnUlang').hidden=true;$('qOpt').classList.add('dis');clearInterval(qTick);
     $('qStars').innerHTML='';$('qFeed').textContent='Soal '+(qi+1)+': '+n+'/'+tot+' tepat. Baca pembahasan, lalu lanjut.';
     $('qModel').textContent=q.contoh+(q.tipe==='ur'?'\nUrutan tepat: '+q.o.map((t,i)=>(i+1)+') '+t).join(' '):'');
@@ -1346,6 +1372,7 @@ $('btnKirim').onclick=()=>{
   qErr('');$('btnKirim').hidden=true;$('btnUlang').hidden=true;$('qOpt').classList.add('dis');clearInterval(qTick);
   const ratio=n/tot,stars=ratio>=.99?3:ratio>=.6?2:1,old=save.progress[mis];
   if(!old||stars>=old.stars)save.progress[mis]={stars,coins:Math.max(mis_coins,old?old.coins:0),answer:ans,ticked:n,total:tot,by:save.mode==='tim'?(curWho&&curWho.nama):''};save.claim=null;
+  if(save.qRun)delete save.qRun[mis];
   persist();Cloud.push();
   $('qStars').innerHTML='★'.repeat(stars)+'<span class="off">'+'★'.repeat(3-stars)+'</span>';
   $('qFeed').textContent=stars===3?'Luar biasa! Penalaranmu tepat ('+n+'/'+tot+').':stars===2?'Bagus! Hampir tepat ('+n+'/'+tot+'). Baca pembahasannya.':'Tetap semangat ('+n+'/'+tot+')! Baca pembahasan lalu ulangi misi untuk menambah bintang.';
@@ -1440,7 +1467,7 @@ const Cloud={db:null,uid:null,ok:false,teacher:false,rows:[],tim:[],ans:{},nilai
  async doPush(){
   const s=save,id=this.uid,t=totals();
   const pub={nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,bintang:t.s,koin:t.k,misi:Object.keys(s.progress).length,
-   cocok:s.cocok.best,cocokAkurasi:s.cocok.acc,cocokMain:s.cocok.plays,refleksi:Object.keys(s.ref).length,ts:Date.now()};
+   cocok:s.cocok.best,cocokAkurasi:s.cocok.acc,cocokMain:s.cocok.plays,refleksi:(s.ref&&s.ref.final)?1:0,ts:Date.now()};
   const pr={anggota:s.members.map(m=>m.nama),ts:Date.now()};
   Object.keys(s.progress).forEach(i=>{const p=s.progress[i];pr['j'+i]={a:p.answer,s:p.stars,t:p.ticked,n:p.total,c:p.coins}});
   Object.keys(s.ref).forEach(k=>{const r=s.ref[k];pr['r_'+k]={a:r.a,k:r.k,ts:r.ts}});
@@ -1474,11 +1501,22 @@ function applyMine(){
 /* ---------- Cocokkan Nilai ---------- */
 let ck={list:[],i:0,ok:0,bonus:0,locked:false};
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+/* progres Cocokkan Nilai tersimpan otomatis (save.ckRun) setiap menjawab, lanjut, atau mengetik alasan */
+function ckSave(){if(!save||!ck.ids)return;save.ckRun={ids:ck.ids,i:ck.i,ok:ck.ok,bonus:ck.bonus,pk:ck.pk||0,why:($('ckWhy')&&$('ckWhy').value)||''};persist()}
 function ckStart(){
+  const r=save&&save.ckRun;
+  if(r&&r.ids&&r.ids.length&&r.i<r.ids.length&&r.ids.every(x=>COCOK[x])){
+    ck={ids:r.ids,list:r.ids.map(x=>COCOK[x]),i:r.i,ok:r.ok||0,bonus:r.bonus||0,pk:r.pk||0,locked:false};
+    $('ckPlay').hidden=false;$('ckEnd').hidden=true;show('cocok');ckRender();
+    if(ck.pk)ckPick(ck.pk,null,true);
+    if(r.why)$('ckWhy').value=r.why;
+    toast('Dilanjutkan dari soal '+(ck.i+1)+'. Progresmu tersimpan otomatis.',2800);return;
+  }
   // 2 situasi per sila agar adil, lalu diacak
   let pick=[];for(let s=1;s<=5;s++)pick=pick.concat(shuffle(COCOK.filter(q=>q.s===s)).slice(0,2));
-  ck={list:shuffle(pick),i:0,ok:0,bonus:0,locked:false};
-  $('ckPlay').hidden=false;$('ckEnd').hidden=true;show('cocok');ckRender();
+  const list=shuffle(pick);
+  ck={list:list,ids:list.map(q=>COCOK.indexOf(q)),i:0,ok:0,bonus:0,pk:0,locked:false};
+  $('ckPlay').hidden=false;$('ckEnd').hidden=true;show('cocok');ckRender();ckSave();
 }
 function ckRender(){
   const q=ck.list[ck.i];
@@ -1492,32 +1530,34 @@ function ckRender(){
     x.onclick=()=>ckPick(i+1,x);b.appendChild(x)});
   $('ckFb').hidden=true;$('ckWhy').value='';ck.locked=false;
 }
-function ckPick(n,btn){
+function ckPick(n,btn,restore){
   if(ck.locked)return;ck.locked=true;
   const q=ck.list[ck.i],good=n===q.s;
-  [].forEach.call($('ckBtns').children,(x,i)=>{x.classList.remove('biru');if(i+1===q.s)x.classList.add('ok');else if(x===btn)x.classList.add('bad')});
-  if(good){ck.ok++;Sfx.coin()}else Sfx.hurt();
+  [].forEach.call($('ckBtns').children,(x,i)=>{x.classList.remove('biru');if(i+1===q.s)x.classList.add('ok');else if(i+1===n)x.classList.add('bad')});
+  if(!restore){ck.pk=n;if(good){ck.ok++;Sfx.coin()}else Sfx.hurt()}
   $('ckPoin').textContent=ck.ok*10+ck.bonus*5;
   $('ckFbT').textContent=(good?'Tepat! ':'Belum tepat. Jawaban yang benar: Sila ke-'+q.s+' ('+SILA_PENDEK[q.s-1]+'). ')+q.a;
   $('ckReason').hidden=!good;
   $('btnCkNext').textContent=ck.i===ck.list.length-1?'Lihat Hasil':'Lanjut';
   $('ckFb').hidden=false;$('ckFb').scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(!restore)ckSave();
 }
 $('btnCkNext').onclick=()=>{
   if(!$('ckReason').hidden&&wc($('ckWhy').value)>=1){ck.bonus++;toast('Bonus alasan +5 poin',1600)}
-  ck.i++;
-  if(ck.i>=ck.list.length)ckFinish();else ckRender();
+  ck.i++;ck.pk=0;
+  if(ck.i>=ck.list.length)ckFinish();else{ckRender();ckSave()}
 };
+$('ckWhy').addEventListener('input',()=>{if(ck.ids&&ck.pk)ckSave()});
 function ckFinish(){
   const poin=ck.ok*10+ck.bonus*5,acc=Math.round(ck.ok/ck.list.length*100),c=save.cocok;
-  c.plays++;if(poin>c.best)c.best=poin;if(acc>c.acc)c.acc=acc;persist();Cloud.push();
+  c.plays++;if(poin>c.best)c.best=poin;if(acc>c.acc)c.acc=acc;delete save.ckRun;persist();Cloud.push();
   $('ckPlay').hidden=true;$('ckEnd').hidden=false;$('ckSkor').textContent=poin;
   $('ckDet').textContent='Benar '+ck.ok+' dari '+ck.list.length+' dan bonus alasan '+ck.bonus+'. Skor terbaikmu '+c.best+' poin.';
   Sfx.win();window.scrollTo(0,0);
 }
 function journey(){
   const n=Object.keys(save.progress).length,all=n===SOAL.length,s2=save.cocok.plays>0,s3=!!(save.tg&&save.tg.plays),s4=!!save.ref.final;
-  const st=[['🗺️','Petualangan Sila',true,all,()=>$('worlds').scrollIntoView({behavior:'smooth'}),n+'/'+SOAL.length+' misi'],['🃏','Cocokkan Nilai',all,s2,()=>{Sfx.init();ckStart()},s2?'Selesai':'Cocokkan sila'],['🧺','Tangkap Nilai',s2,s3,()=>{Sfx.init();tgStart()},s3?'Terbaik '+save.tg.best:'Mini-game seru'],['📝','Refleksi Akhir',s3,s4,()=>openRef('final'),s4?'Selesai':'Materi, game, saran']];
+  const st=[['🗺️','Petualangan Sila',true,all,()=>$('worlds').scrollIntoView({behavior:'smooth'}),n+'/'+SOAL.length+' misi'],['🃏','Cocokkan Nilai',all,s2,()=>{Sfx.init();ckStart()},s2?'Selesai':'Cocokkan sila'],['🧺','Tangkap Nilai',s2,s3,()=>{Sfx.init();tgStart()},s3?'Terbaik '+save.tg.best:'Mini-game seru'],['📝','Refleksi Akhir',true,s4,()=>openRef('final'),s4?'Selesai':'Boleh diisi kapan saja']];
   const j=$('journey');j.innerHTML='';
   st.forEach(x=>{const b=mk('button','jst'+(x[3]?' done':x[2]?' open':' lock'));b.type='button';b.disabled=!x[2];b.append(mk('span','ji',x[3]?'✓':x[2]?x[0]:'🔒'),mk('b','',x[1]),mk('small','',x[2]?x[5]:'Selesaikan tahap sebelumnya'));b.onclick=x[4];j.appendChild(b)});
 }
@@ -1562,7 +1602,7 @@ function timBox(){
   p.appendChild(mk('p','kw','Misi selesai: '+timRoster().map(n=>n+' '+(cnt[n]||0)).join(' · ')+'. Total tim '+Object.keys(save.progress).length+'/'+SOAL.length+'.'));
   const cl={},bd=mk('div','tgrid');(Cloud.tim||[]).forEach(d=>{if(d.kode===timCode()&&d.c>=0&&d.nama!==save.members[save.me].nama&&!save.progress[d.c])cl[d.c]=d.nama});
   SOAL.forEach((q,i)=>{const r=save.progress[i],w=cl[i];bd.appendChild(mk('div','tcell'+(r?' ok':w?' wip':''),q.w+'-'+(i%3+1)+(r?' ✓'+(r.by?' '+r.by.slice(0,5):''):w?' ⏳'+w.slice(0,5):'')))});
-  p.append(mk('p','kw',(Cloud.ok?'Terhubung: hasil dan misi yang sedang dikerjakan anggota tampil otomatis. ':'Belum terhubung ke tim (perlu tautan guru dan akun): pakai Bagikan Hasilku. ')+'Hijau = selesai, oranye = sedang dikerjakan, abu = belum.'),bd);
+  p.append(mk('p','kw',(Cloud.ok?'Terhubung: hasil dan misi yang sedang dikerjakan anggota tampil otomatis. ':'Belum terhubung ke tim: buka game lewat link GitHub Pages dari gurumu (bukan file HTML yang dibuka langsung) agar sinkron otomatis tanpa kode. Untuk sementara pakai Bagikan Hasilku. ')+'Hijau = selesai, oranye = sedang dikerjakan, abu = belum.'),bd);
   const r=mk('div','row'),a=mk('button','btn biru kecil','Bagikan Hasilku'),g=mk('button','btn hijau kecil','Tempel & Gabung'),box=mk('div');a.type=g.type='button';
   a.onclick=()=>{if(Cloud.ok){Cloud.push();toast('Hasilmu dikirim ke semua anggota tim.',2800)}else bagikan(pesan())};
   g.onclick=async()=>{try{const t=await navigator.clipboard.readText();if(/[A-Za-z0-9]\|[^|\n]+\|[0-9.,]+/.test(t)){gabung(t);return}}catch(e){}box.innerHTML='';const ta=document.createElement('textarea');ta.placeholder='Tempel pesan hasil dari anggota (ada tulisan PP|...)';ta.style.minHeight='90px';const ok=mk('button','btn hijau kecil','Gabungkan');ok.type='button';ok.onclick=()=>gabung(ta.value);box.append(ta,ok)};
@@ -1609,7 +1649,7 @@ const TG_B=['Mengejek teman karena fisik','Menyebarkan hoaks','Memaksakan kehend
 let tg=null,tgRaf=0,tgDir=0,tgNyawaOn=false;
 function tgNyawaUI(){const n=SH().qty.nyawa||0,b=$('btnTgNyawa');b.hidden=n<1;b.textContent=(tgNyawaOn?'✅ ':'')+'❤️ Pakai Nyawa Ekstra (punya '+n+')'}
 $('btnTgNyawa').onclick=()=>{tgNyawaOn=!tgNyawaOn;tgNyawaUI()};
-const TG_MIN=36,TG_MAX=324,TG_V0=1.0,TG_DV=.07;
+const TG_MIN=48,TG_MAX=312,TG_V0=1.0,TG_DV=.07,TG_BW=96,TG_Y0=420,TG_Y1=466; /* bingkai tangkap: lebar 96, tinggi y 420 sampai 466 */
 /* kecepatan memakai waktu nyata (bukan per frame) agar sama di layar 60Hz dan 120Hz (iPhone Pro) */
 function tgFit(){
   const cv=$('tgCv');if(!cv||$('tangkap').hidden)return;
@@ -1665,11 +1705,15 @@ function tgLoop(now){
     if(!g.end&&g.i<g.items.length&&g.time>=g.next){const o=g.items[g.i];g.i++;
       g.it.push({t:o.t,g:o.g,x:4+Math.random()*202,y:-52,v:TG_V0+(g.i-1)*TG_DV});
       g.next=g.time+Math.max(62,112-g.i*2.6)}
-    g.it.forEach(o=>{o.y+=o.v*dt;
-      if(!o.chk&&o.y+50>=412){o.chk=1;
-        if(Math.abs(o.x+75-g.bx)<88){o.d=1;
-          if(o.g){g.poin+=10;g.ok++;Sfx.coin();g.fb=['Tepat! +10','#1f8a4c']}else{g.nyawa--;Sfx.hurt();g.fb=['Itu bukan sikap Pancasila!','#d63a45']}
-          g.fbT=55;$('tgPoin').textContent=g.poin;$('tgNyawa').textContent=Math.max(0,g.nyawa)}}});
+    g.it.forEach(o=>{o.y+=o.v*dt;if(o.d)return;
+      /* Tertangkap = kartu bersentuhan dengan bingkai kuning keranjang (minimal 14 piksel tumpang tindih). Keranjang boleh digeser sampai kartu menyentuh bingkai. */
+      if(o.y+50>=TG_Y0&&o.y<=TG_Y1){
+        const ov=Math.min(o.x+150,g.bx+TG_BW/2)-Math.max(o.x,g.bx-TG_BW/2);
+        if(ov>=14){o.d=1;
+          if(o.g){g.poin+=10;g.ok++;Sfx.coin();g.fb=['Tepat! +10','#1f8a4c']}else{g.nyawa--;Sfx.hurt();g.fb=['Itu bukan sikap Pancasila! Nyawa -1','#d63a45']}
+          g.fbT=55;$('tgPoin').textContent=g.poin;$('tgNyawa').textContent=Math.max(0,g.nyawa)}}
+      else if(o.y>TG_Y1&&!o.chk){o.chk=1;
+        if(o.g){g.fb=['Terlewat: kartu sesuai tidak tertangkap','#b36b00']}else{g.fb=['Bagus, kamu menghindari sikap yang salah','#1f8a4c']}g.fbT=45}});
     g.it=g.it.filter(o=>!o.d&&o.y<490);
   }
   tgDraw();
@@ -1680,7 +1724,10 @@ function tgDraw(){
   const g=tg,c=g.c,gr=c.createLinearGradient(0,0,0,480);gr.addColorStop(0,'#8fd8ff');gr.addColorStop(1,'#e8f8ff');c.fillStyle=gr;c.fillRect(0,0,360,480);
   c.font='700 13px system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';
   g.it.forEach(o=>{c.fillStyle='#fff';c.strokeStyle='#16225e';c.lineWidth=2;c.beginPath();c.rect(o.x,o.y,150,50);c.fill();c.stroke();c.fillStyle='#16225e';const w=o.t.split(' '),h=Math.ceil(w.length/2);c.fillText(w.slice(0,h).join(' '),o.x+75,o.y+19);c.fillText(w.slice(h).join(' '),o.x+75,o.y+36)});
-  c.font='52px system-ui,Apple Color Emoji,sans-serif';c.fillText('🧺',g.bx,446);
+  c.save();c.setLineDash([]);c.strokeStyle='rgba(22,34,94,.28)';c.lineWidth=1.5;c.setLineDash([6,5]);c.beginPath();c.moveTo(0,TG_Y0);c.lineTo(360,TG_Y0);c.stroke();c.setLineDash([6,4]);
+  c.fillStyle='rgba(255,199,44,.28)';c.strokeStyle='#d99a00';c.lineWidth=2.5;c.beginPath();c.rect(g.bx-TG_BW/2,TG_Y0,TG_BW,TG_Y1-TG_Y0);c.fill();c.stroke();c.restore();
+  c.font='56px system-ui,Apple Color Emoji,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('🧺',g.bx,446);
+  c.font='700 10px system-ui,sans-serif';c.fillStyle='rgba(22,34,94,.75)';c.fillText('Kartu tertangkap saat menyentuh bingkai kuning',180,474);
   if(g.fbT>0){g.fbT--;c.font='800 16px system-ui,sans-serif';c.fillStyle=g.fb[1];c.fillText(g.fb[0],180,24)}
   if(g.run&&g.cdMs>0){c.fillStyle='#16225e';c.font='800 22px system-ui,sans-serif';c.fillText('Bersiap...',180,190);c.font='800 110px system-ui,sans-serif';c.fillText(String(Math.ceil(g.cdMs/900)),180,270)}
 }
@@ -1767,7 +1814,7 @@ function renderRank(){
 /* ---------- refleksi ---------- */
 const REFQ={
  w:['Sikap atau nilai Pancasila apa yang paling kamu pahami dari dunia ini? Jelaskan dengan contoh.','Bagian mana yang paling sulit bagimu, dan apa penyebabnya?','Aksi nyata apa yang akan kamu lakukan minggu ini di rumah, sekolah, atau lingkungan sekitar?'],
- f:['Materi: Apa perubahan cara pandang atau sikapmu tentang penerapan Pancasila setelah menyelesaikan seluruh petualangan ini?','Materi: Dari kelima sila, sila mana yang paling menantang untuk kamu terapkan? Mengapa, dan berikan satu contoh situasi nyata.','Materi: Tuliskan satu komitmen nyata yang akan kamu jaga mulai besok untuk menerapkan Pancasila.','Game: Bagian game mana (lari, soal misi, Cocokkan Nilai, atau Tangkap Nilai) yang paling membantumu memahami penerapan Pancasila? Jelaskan alasanmu.','Game: Bagian mana yang terasa membosankan atau sulit dipahami? Ceritakan apa yang membuatmu merasa begitu.','Saran: Apa saran perbaikanmu untuk game ini (soal, tantangan, tampilan, atau mini-game baru) agar belajar Pancasila lebih seru?'],
+ f:['Materi: Apa perubahan cara pandang atau sikapmu tentang penerapan Pancasila setelah menjalani petualangan ini sejauh ini?','Materi: Dari kelima sila, sila mana yang paling menantang untuk kamu terapkan? Mengapa, dan berikan satu contoh situasi nyata.','Materi: Tuliskan satu komitmen nyata yang akan kamu jaga mulai besok untuk menerapkan Pancasila.','Game: Bagian game mana (lari, soal misi, Cocokkan Nilai, atau Tangkap Nilai) yang paling membantumu memahami penerapan Pancasila? Jelaskan alasanmu.','Game: Bagian mana yang terasa membosankan atau sulit dipahami? Ceritakan apa yang membuatmu merasa begitu.','Saran: Apa saran perbaikanmu untuk game ini (soal, tantangan, tampilan, atau mini-game baru) agar belajar Pancasila lebih seru?'],
  tim:'Bagaimana kerja sama timmu? Siapa yang paling membantu dan apa yang perlu diperbaiki?'
 };
 let rfKey='',rfConf=0;
@@ -1800,7 +1847,7 @@ function stats(r){
   const g=sk.length?sk.reduce((a,b)=>a+b,0)/sk.length:null;
   const sp=r.misi?r.bintang/(r.misi*3)*100:null;
   const cp=r.cocokMain>0?r.cocokAkurasi:null;
-  const rp=(r.refleksi||0)/6*100;
+  const rp=(r.refleksi||0)/1*100;
   const w=bobot(),parts=[[g==null?null:g*25,w.g],[sp,w.s],[cp,w.c],[rp,w.r]].filter(p=>p[0]!=null&&p[1]>0);
   const tot=parts.reduce((a,p)=>a+p[1],0);
   return {g:g,nGuru:sk.length,sp:sp,cp:cp,nilai:tot?parts.reduce((a,p)=>a+p[0]*p[1],0)/tot:null};
@@ -1816,7 +1863,7 @@ function renderGuru(){
   d.hidden=true;m.hidden=false;m.innerHTML='';
   const p1=mk('div','panel');
   p1.appendChild(mk('h3','','Cara penilaian'));
-  p1.appendChild(mk('p','','Nilai usulan menggabungkan empat komponen: skor guru (rata-rata 1–4 dari jawaban yang Anda nilai), bintang cek mandiri murid, akurasi Cocokkan Nilai, dan kelengkapan refleksi (6 refleksi). Bobot di bawah ini usulan dan bisa Anda ubah. Komponen yang belum ada dilewati dan bobotnya dibagi ulang.'));
+  p1.appendChild(mk('p','','Nilai usulan menggabungkan empat komponen: skor guru (rata-rata 1–4 dari jawaban yang Anda nilai), bintang cek mandiri murid, akurasi Cocokkan Nilai, dan kelengkapan refleksi (1 refleksi akhir). Bobot di bawah ini usulan dan bisa Anda ubah. Komponen yang belum ada dilewati dan bobotnya dibagi ulang.'));
   const w=bobot(),wg=mk('div','wgrid');
   [['g','Skor guru'],['s','Bintang'],['c','Cocokkan'],['r','Refleksi']].forEach(([k,t])=>{
     const box=mk('div');const l=mk('label','f',t+' (%)');l.htmlFor='bw'+k;l.style.marginTop='0';const i=document.createElement('input');i.type='text';i.inputMode='numeric';i.id='bw'+k;i.value=w[k];
@@ -1837,7 +1884,7 @@ function renderGTable(){
   ['Nama / Tim','Mode','Misi','Bintang','Skor guru','Cocokkan','Refleksi','Nilai usulan'].forEach(x=>h.appendChild(mk('th','',x)));t.appendChild(h);
   Cloud.rows.slice().sort((a,b)=>(a.nama||'').localeCompare(b.nama||'')).forEach(r=>{
     const s=stats(r),tr=mk('tr','klik');tr.tabIndex=0;
-    [r.nama||'-',r.mode==='tim'?'Tim':'Individu',(r.misi||0)+'/25',r.bintang||0,s.g==null?'belum':f1(s.g)+' ('+s.nGuru+')',r.cocokMain?(r.cocok+' poin'):'-',(r.refleksi||0)+'/6',s.nilai==null?'-':f1(s.nilai)].forEach(x=>tr.appendChild(mk('td','',x)));
+    [r.nama||'-',r.mode==='tim'?'Tim':'Individu',(r.misi||0)+'/25',r.bintang||0,s.g==null?'belum':f1(s.g)+' ('+s.nGuru+')',r.cocokMain?(r.cocok+' poin'):'-',(r.refleksi||0)+'/1',s.nilai==null?'-':f1(s.nilai)].forEach(x=>tr.appendChild(mk('td','',x)));
     const go=()=>{gSel=r.id;gDel=0;window.scrollTo(0,0);renderGuru()};tr.onclick=go;tr.onkeydown=e=>{if(e.key==='Enter')go()};t.appendChild(tr)});
   tw.appendChild(t);
 }
@@ -1848,7 +1895,7 @@ function renderGuruDet(){
   const a=Cloud.ans[gSel]||{},nl=Cloud.nilai[gSel]||{},s=stats(r);
   const head=mk('div','panel');head.appendChild(mk('h3','',r.nama||'Tanpa nama'));
   if(a.anggota&&r.mode==='tim')head.appendChild(mk('p','kw','Anggota: '+a.anggota.join(', ')));
-  head.appendChild(mk('p','','Misi selesai '+(r.misi||0)+'/25 · Bintang '+(r.bintang||0)+' · Koin '+(r.koin||0)+' · Cocokkan '+(r.cocokMain?r.cocok+' poin ('+r.cocokAkurasi+'% akurat)':'belum main')+' · Refleksi '+(r.refleksi||0)+'/6 · Nilai usulan '+f1(s.nilai)));
+  head.appendChild(mk('p','','Misi selesai '+(r.misi||0)+'/25 · Bintang '+(r.bintang||0)+' · Koin '+(r.koin||0)+' · Cocokkan '+(r.cocokMain?r.cocok+' poin ('+r.cocokAkurasi+'% akurat)':'belum main')+' · Refleksi '+(r.refleksi||0)+'/1 · Nilai usulan '+f1(s.nilai)));
   d.appendChild(head);
   let n=0;
   for(let i=0;i<SOAL.length;i++){
@@ -1919,7 +1966,7 @@ Cloud.init();
     if(FB){const t0=totals();fetch(FB+'/'+pem()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify({nama:save.mode==='solo'?save.members[0].nama:save.team,mode:save.mode,bintang:t0.s,koin:t0.k,misi:Object.keys(save.progress).length,cocok:save.cocok.best,ts:Date.now()})}).then(r=>{Cloud.diagW=r.ok?'':'GAGAL KIRIM skor (kode '+r.status+'): Firebase menolak tulis. Ubah Rules agar .write true.';if(visible('rank'))renderRank()}).catch(e=>{Cloud.diagW='GAGAL KIRIM skor: tidak bisa terhubung ke Firebase.';if(visible('rank'))renderRank()})}
     if(FB&&save.mode==='tim'&&timCode())fetch(FB+'/tim/'+timCode()+'/'+ID+'.json',{method:'PUT',body:JSON.stringify(timDoc())}).catch(()=>{});
     if(SH){const s=save,t=totals(),j={};Object.keys(s.progress).forEach(i=>{const p=s.progress[i];j[SOAL[i]?SOAL[i].w+'-'+(i%3+1):i]={bintang:p.stars,jawaban:p.answer,oleh:p.by||''}});
-     fetch(SH,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:ID,kelas:kelasAktif(),nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,anggota:s.members.map(m=>m.nama).join(', '),misi:Object.keys(s.progress).length,bintang:t.s,koin:t.k,cocok:s.cocok.best,akurasi:s.cocok.acc,tangkap:(s.tg&&s.tg.best)||0,refleksi:Object.keys(s.ref).length,detail:j,refleksiIsi:s.ref,ts:Date.now()})}).catch(()=>{})}
+     fetch(SH,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({id:ID,kelas:kelasAktif(),nama:s.mode==='solo'?s.members[0].nama:s.team,mode:s.mode,anggota:s.members.map(m=>m.nama).join(', '),misi:Object.keys(s.progress).length,bintang:t.s,koin:t.k,cocok:s.cocok.best,akurasi:s.cocok.acc,tangkap:(s.tg&&s.tg.best)||0,refleksi:(s.ref&&s.ref.final)?1:0,detail:j,refleksiIsi:s.ref,ts:Date.now()})}).catch(()=>{})}
    },
    rsig:'',
    async pollRank(){
@@ -1946,4 +1993,7 @@ show('home');
 
 </script>
 
+<style>.kredit{position:fixed;left:50%;bottom:3px;transform:translateX(-50%);z-index:5;font:600 11px/1.2 system-ui,sans-serif;color:#555;background:rgba(255,255,255,.85);padding:3px 10px;border-radius:99px;pointer-events:none;white-space:nowrap;max-width:96vw;overflow:hidden;text-overflow:ellipsis}</style>
+<div class="kredit">Created by Umi Khoiriyah · 2500103916154006</div>
+<!-- Created by Umi Khoiriyah 2500103916154006 -->
 </body></html>
