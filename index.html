@@ -1152,7 +1152,7 @@ $('btnTim').onclick=()=>openSetup('tim');
 $('btnLanjut').onclick=()=>{Sfx.init();show('map')};
 
 /* kelas: config.js boleh kelas:'7A' (satu kelas) atau kelas:['7I','7E'] (murid memilih sendiri) */
-const KELAS_DEF=['7I','7E']; /* cadangan: jika config.js tidak memuat 'kelas', murid tetap memilih 7I atau 7E */
+const KELAS_DEF=['7I','7E','7F']; /* cadangan: jika config.js tidak memuat 'kelas', murid tetap memilih 7I atau 7E */
 function kelasCfg(){const k=(window.PP_CONFIG||{}).kelas;return (k==null||k===''||(Array.isArray(k)&&!k.length))?KELAS_DEF:k}
 function daftarKelas(){const k=kelasCfg();return Array.isArray(k)&&k.length?k.map(String):null}
 function kelasAktif(){const k=kelasCfg();if(Array.isArray(k))return (save&&save.kelas)||'';return k?String(k):''}
